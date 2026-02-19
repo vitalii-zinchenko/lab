@@ -5,6 +5,9 @@ networks:
 services:
   api:
     build: .
+    volumes:
+      - .:/app          # mount source so air picks up changes from the host
+      - /app/tmp        # keep air's compiled binary inside the container
     ports:
       - "8080:8080"
     networks:

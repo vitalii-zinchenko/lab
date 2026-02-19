@@ -1,19 +1,16 @@
-FROM golang:1.23-alpine AS builder
+# LOCAL DEVELOPMENT ONLY — uses air for hot reload.
+# Do NOT use this in production or perf tests.
+# To build a production binary: go build -o server ./cmd/server
+
+FROM golang:1.25-alpine
 
 WORKDIR /app
+
+RUN go install github.com/air-verse/air@latest
 
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o server ./cmd/server
-
-FROM alpine:3.20
-
-RUN apk --no-cache add ca-certificates
-
-WORKDIR /app
-COPY --from=builder /app/server .
-
 EXPOSE 8080
-CMD ["./server"]
+
+CMD ["air"]
