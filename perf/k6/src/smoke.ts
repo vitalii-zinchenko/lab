@@ -9,6 +9,7 @@
  *   BASE_URL=http://staging:8080 npm run smoke
  */
 import { check, sleep } from 'k6';
+import http from 'k6/http';
 import { healthCheck, listItems, createItem, getItem, deleteItem } from './lib/api';
 import { randomItemName, randomDescription } from './lib/helpers';
 
@@ -64,8 +65,9 @@ export default function (): void {
   const deleted = deleteItem(id);
   check(deleted, { 'delete: status 204': (r) => r.status === 204 });
 
-  // 6. Verify it is truly gone
-  const gone = getItem(id);
+  // 6. Verify it is truly gone (404 is intentional — mark it as expected so it
+  //    doesn't count against the http_req_failed threshold)
+  const gone = getItem(id, { responseCallback: http.expectedStatuses(404) });
   check(gone, { 'get deleted: status 404': (r) => r.status === 404 });
 
   sleep(1);

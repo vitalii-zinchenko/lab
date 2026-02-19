@@ -1,4 +1,4 @@
-import http from 'k6/http';
+import http, { Params } from 'k6/http';
 import { BASE_URL, JSON_HEADERS } from './helpers';
 
 // Domain types matching the server's OpenAPI schema
@@ -35,9 +35,10 @@ export function createItem(name: string, description?: string) {
   });
 }
 
-export function getItem(id: string) {
+export function getItem(id: string, extraParams?: Params) {
   return http.get(`${BASE_URL}/items/${id}`, {
     tags: { endpoint: 'get_item' },
+    ...extraParams,
   });
 }
 

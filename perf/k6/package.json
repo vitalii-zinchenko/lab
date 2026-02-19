@@ -9,7 +9,7 @@
     "stress": "webpack && k6 run dist/stress.js"
   },
   "devDependencies": {
-    "@types/k6": "^0.55.0",
+    "@types/k6": "^1.6.0",
     "ts-loader": "^9.5.0",
     "typescript": "^5.7.0",
     "webpack": "^5.99.0",

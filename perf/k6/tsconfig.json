@@ -4,6 +4,7 @@
     "module": "CommonJS",
     "moduleResolution": "node",
     "strict": true,
+    "esModuleInterop": true,
     "noEmit": true,
     "lib": ["ES2020"],
     "baseUrl": ".",
