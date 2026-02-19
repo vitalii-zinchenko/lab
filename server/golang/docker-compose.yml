@@ -1,0 +1,14 @@
+networks:
+  lab-network:
+    external: true
+
+services:
+  api:
+    build: .
+    ports:
+      - "8080:8080"
+    networks:
+      - lab-network
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@pgbouncer:5432/${POSTGRES_DB:-app}
+    restart: unless-stopped

@@ -1,3 +1,7 @@
+networks:
+  lab-network:
+    name: lab-network
+
 services:
   prometheus:
     image: prom/prometheus:latest
@@ -14,6 +18,25 @@ services:
       - "--web.console.templates=/etc/prometheus/consoles"
       - "--web.enable-lifecycle"
     restart: unless-stopped
+    networks:
+      - lab-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - lab-network
 
   postgres:
     image: postgres:17
@@ -31,6 +54,8 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    networks:
+      - lab-network
 
   pgbouncer:
     image: edoburu/pgbouncer:latest
@@ -54,7 +79,10 @@ services:
       postgres:
         condition: service_healthy
     restart: unless-stopped
+    networks:
+      - lab-network
 
 volumes:
   prometheus_data:
+  grafana_data:
   pgdata:

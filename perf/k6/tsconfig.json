@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "strict": true,
+    "noEmit": true,
+    "lib": ["ES2020"],
+    "baseUrl": ".",
+    "paths": {
+      "k6": ["./node_modules/@types/k6"],
+      "k6/*": ["./node_modules/@types/k6/*"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}
