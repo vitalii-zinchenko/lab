@@ -1,4 +1,4 @@
-.PHONY: infra-up infra-down db-migrate-up server-up server-down perf-install perf-smoke perf-load perf-stress
+.PHONY: infra-up infra-down db-migrate-up server-up server-down perf-install perf-smoke perf-load perf-stress dashboards dashboards-renderer
 
 POSTGRES_USER             ?= postgres
 POSTGRES_PASSWORD         ?= postgres
@@ -46,6 +46,24 @@ server-up:
 
 server-down:
 	docker compose -f server/golang/docker-compose.yml down
+
+# Grafana dashboards — render Jsonnet → JSON via Docker (no local tooling needed)
+# On first run jb downloads grafonnet (~30 s); subsequent runs use the cached image.
+dashboards-renderer:
+	docker build -t jsonnet-renderer infra/grafana/dashboards/
+
+dashboards: dashboards-renderer
+	@echo "Rendering Grafana dashboards..."
+	@mkdir -p infra/grafana/provisioning/dashboards
+	@docker run --rm \
+	  -v "$(CURDIR)/infra/grafana/dashboards":/src \
+	  -v "$(CURDIR)/infra/grafana/provisioning/dashboards":/out \
+	  -w /src \
+	  jsonnet-renderer \
+	  sh -c "jb install && \
+	    jsonnet -J vendor go-runtime.jsonnet > /out/go-runtime.json && \
+	    jsonnet -J vendor api-red.jsonnet    > /out/api-red.json"
+	@echo "Dashboards written to infra/grafana/provisioning/dashboards/"
 
 # Performance tests (requires k6: brew install k6)
 BASE_URL ?= http://localhost:8080
