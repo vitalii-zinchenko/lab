@@ -3,14 +3,20 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	ginmiddleware "github.com/oapi-codegen/gin-middleware"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	ginprometheus "github.com/zsais/go-gin-prometheus"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+
 	"github.com/vitaliizinchenko/lab/gen"
 	"github.com/vitaliizinchenko/lab/handler"
+	"github.com/vitaliizinchenko/lab/repository"
 )
 
 func init() {
@@ -23,6 +29,28 @@ func init() {
 }
 
 func main() {
+	// --- Database ---
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		log.Fatal("DATABASE_URL environment variable is required")
+	}
+
+	db, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Fatalf("failed to get sql.DB from gorm: %v", err)
+	}
+	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetMaxIdleConns(25)
+	sqlDB.SetConnMaxLifetime(5 * time.Minute)
+
+	itemRepo := repository.NewItemRepository(db)
+
+	// --- OpenAPI / Swagger ---
 	swagger, err := gen.GetSwagger()
 	if err != nil {
 		log.Fatalf("failed to load swagger spec: %v", err)
@@ -30,6 +58,7 @@ func main() {
 	// Clear servers so the validator doesn't enforce host/scheme matching
 	swagger.Servers = nil
 
+	// --- Router ---
 	router := gin.Default()
 
 	// Prometheus metrics middleware — must be registered before other middleware
@@ -45,7 +74,7 @@ func main() {
 	// Validate all incoming requests against the OpenAPI spec
 	router.Use(ginmiddleware.OapiRequestValidator(swagger))
 
-	h := handler.New()
+	h := handler.New(itemRepo)
 	strictHandler := gen.NewStrictHandler(h, nil)
 	gen.RegisterHandlers(router, strictHandler)
 

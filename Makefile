@@ -25,6 +25,7 @@ infra-up:
 	@echo "Services running:"
 	@echo "  Prometheus: http://localhost:9090"
 	@echo "  Grafana:    http://localhost:3000"
+	@echo "  pgAdmin:    http://localhost:5050  (admin@admin.com / admin)"
 	@echo "  Postgres:   localhost:5432"
 	@echo "  PgBouncer:  localhost:6432"
 
@@ -39,7 +40,7 @@ db-migrate-up:
 		go run .
 
 server-up:
-	docker compose -f server/golang/docker-compose.yml up --build
+	docker compose -f server/golang/docker-compose.yml up -d --build
 	@echo ""
 	@echo "Services running:"
 	@echo "  API: http://localhost:8080"
@@ -61,8 +62,10 @@ dashboards: dashboards-renderer
 	  -w /src \
 	  jsonnet-renderer \
 	  sh -c "jb install && \
-	    jsonnet -J vendor go-runtime.jsonnet > /out/go-runtime.json && \
-	    jsonnet -J vendor api-red.jsonnet    > /out/api-red.json"
+	    jsonnet -J vendor go-runtime.jsonnet  > /out/go-runtime.json && \
+	    jsonnet -J vendor api-red.jsonnet     > /out/api-red.json && \
+	    jsonnet -J vendor postgres.jsonnet    > /out/postgres.json && \
+	    jsonnet -J vendor pgbouncer.jsonnet   > /out/pgbouncer.json"
 	@echo "Dashboards written to infra/grafana/provisioning/dashboards/"
 
 # Performance tests (requires k6: brew install k6)

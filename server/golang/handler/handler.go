@@ -2,24 +2,32 @@ package handler
 
 import (
 	"context"
-	"sync"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/vitaliizinchenko/lab/gen"
+	"github.com/vitaliizinchenko/lab/repository"
 )
 
 // Handler implements gen.StrictServerInterface.
-// Currently uses in-memory storage — replace with a real DB later.
 type Handler struct {
-	mu    sync.RWMutex
-	items map[openapi_types.UUID]gen.Item
+	items repository.ItemRepository
 }
 
-func New() *Handler {
-	return &Handler{
-		items: make(map[openapi_types.UUID]gen.Item),
+func New(items repository.ItemRepository) *Handler {
+	return &Handler{items: items}
+}
+
+// toGenItem converts a repository.Item to the API response type gen.Item.
+// openapi_types.UUID and uuid.UUID are both [16]byte — the cast is zero-cost.
+func toGenItem(r repository.Item) gen.Item {
+	return gen.Item{
+		Id:          openapi_types.UUID(r.ID),
+		Name:        r.Name,
+		Description: r.Description,
+		CreatedAt:   r.CreatedAt,
 	}
 }
 
@@ -27,63 +35,61 @@ func (h *Handler) GetHealth(_ context.Context, _ gen.GetHealthRequestObject) (ge
 	return gen.GetHealth200JSONResponse{Status: "ok"}, nil
 }
 
-func (h *Handler) ListItems(_ context.Context, req gen.ListItemsRequestObject) (gen.ListItemsResponseObject, error) {
-	h.mu.RLock()
-	defer h.mu.RUnlock()
-
+func (h *Handler) ListItems(ctx context.Context, req gen.ListItemsRequestObject) (gen.ListItemsResponseObject, error) {
 	limit := 20
 	if req.Params.Limit != nil {
 		limit = *req.Params.Limit
 	}
 
-	result := make([]gen.Item, 0, len(h.items))
-	for _, item := range h.items {
-		result = append(result, item)
-		if len(result) >= limit {
-			break
-		}
+	repoItems, err := h.items.List(ctx, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]gen.Item, len(repoItems))
+	for i, item := range repoItems {
+		result[i] = toGenItem(item)
 	}
 
 	return gen.ListItems200JSONResponse(result), nil
 }
 
-func (h *Handler) CreateItem(_ context.Context, req gen.CreateItemRequestObject) (gen.CreateItemResponseObject, error) {
-	h.mu.Lock()
-	defer h.mu.Unlock()
-
-	id := openapi_types.UUID(uuid.New())
-	item := gen.Item{
-		Id:          id,
+func (h *Handler) CreateItem(ctx context.Context, req gen.CreateItemRequestObject) (gen.CreateItemResponseObject, error) {
+	newItem := repository.Item{
+		ID:          uuid.New(),
 		Name:        req.Body.Name,
 		Description: req.Body.Description,
 		CreatedAt:   time.Now().UTC(),
 	}
-	h.items[id] = item
 
-	return gen.CreateItem201JSONResponse(item), nil
+	created, err := h.items.Create(ctx, newItem)
+	if err != nil {
+		return nil, err
+	}
+
+	return gen.CreateItem201JSONResponse(toGenItem(created)), nil
 }
 
-func (h *Handler) GetItem(_ context.Context, req gen.GetItemRequestObject) (gen.GetItemResponseObject, error) {
-	h.mu.RLock()
-	defer h.mu.RUnlock()
-
-	item, ok := h.items[req.Id]
-	if !ok {
+func (h *Handler) GetItem(ctx context.Context, req gen.GetItemRequestObject) (gen.GetItemResponseObject, error) {
+	item, err := h.items.GetByID(ctx, uuid.UUID(req.Id))
+	if errors.Is(err, repository.ErrNotFound) {
 		return gen.GetItem404JSONResponse{Message: "item not found"}, nil
 	}
-
-	return gen.GetItem200JSONResponse(item), nil
-}
-
-func (h *Handler) DeleteItem(_ context.Context, req gen.DeleteItemRequestObject) (gen.DeleteItemResponseObject, error) {
-	h.mu.Lock()
-	defer h.mu.Unlock()
-
-	if _, ok := h.items[req.Id]; !ok {
-		return gen.DeleteItem404JSONResponse{Message: "item not found"}, nil
+	if err != nil {
+		return nil, err
 	}
 
-	delete(h.items, req.Id)
+	return gen.GetItem200JSONResponse(toGenItem(item)), nil
+}
+
+func (h *Handler) DeleteItem(ctx context.Context, req gen.DeleteItemRequestObject) (gen.DeleteItemResponseObject, error) {
+	err := h.items.Delete(ctx, uuid.UUID(req.Id))
+	if errors.Is(err, repository.ErrNotFound) {
+		return gen.DeleteItem404JSONResponse{Message: "item not found"}, nil
+	}
+	if err != nil {
+		return nil, err
+	}
 
 	return gen.DeleteItem204Response{}, nil
 }

@@ -68,9 +68,20 @@ local jobVar =
   + var.query.withSort(1)
   + var.query.generalOptions.withLabel('Job');
 
+// method: optional, multi-select, All = regex .* (matches every method label)
+local methodVar =
+  var.query.new('method', 'label_values(' + reqTotal + '{job="$job"}, method)')
+  + var.query.withDatasource('prometheus', '${datasource}')
+  + var.query.withRefresh(2)
+  + var.query.withSort(1)
+  + var.query.selectionOptions.withIncludeAll(true)
+  + var.query.selectionOptions.withMulti(true)
+  + var.query.generalOptions.withLabel('Method');
+
 // endpoint: optional, multi-select, All = regex .* (matches every url label)
+// filtered by selected method so the dropdown only shows relevant paths.
 local endpointVar =
-  var.query.new('endpoint', 'label_values(' + reqTotal + '{job="$job"}, url)')
+  var.query.new('endpoint', 'label_values(' + reqTotal + '{job="$job", method=~"$method"}, url)')
   + var.query.withDatasource('prometheus', '${datasource}')
   + var.query.withRefresh(2)
   + var.query.withSort(1)
@@ -86,14 +97,14 @@ g.dashboard.new('API RED Metrics')
 + g.dashboard.time.withFrom('now-1h')
 + g.dashboard.time.withTo('now')
 + g.dashboard.withRefresh('30s')
-+ g.dashboard.withVariables([datasourceVar, jobVar, endpointVar])
++ g.dashboard.withVariables([datasourceVar, jobVar, methodVar, endpointVar])
 + g.dashboard.withPanels([
 
   // ── Summary stats (y=0) ───────────────────────────────────────────────────
 
   statPanel('Request Rate', 'reqps', [
     target(
-      'sum(rate(' + reqTotal + '{job="$job", url=~"$endpoint"}[$__rate_interval]))',
+      'sum(rate(' + reqTotal + '{job="$job", method=~"$method", url=~"$endpoint"}[$__rate_interval]))',
       'req/s'),
   ], 8, 4, 0, 0),
 
@@ -102,31 +113,31 @@ g.dashboard.new('API RED Metrics')
   // are no 5xx errors in the selected window.
   statPanel('Error Rate', 'percentunit', [
     target(
-      '(sum(rate(' + reqTotal + '{job="$job", url=~"$endpoint", code=~"5.."}[$__rate_interval])) or vector(0))'
-      + ' / sum(rate(' + reqTotal + '{job="$job", url=~"$endpoint"}[$__rate_interval]))',
+      '(sum(rate(' + reqTotal + '{job="$job", method=~"$method", url=~"$endpoint", code=~"5.."}[$__rate_interval])) or vector(0))'
+      + ' / sum(rate(' + reqTotal + '{job="$job", method=~"$method", url=~"$endpoint"}[$__rate_interval]))',
       'error rate'),
   ], 8, 4, 8, 0),
 
   statPanel('p99 Latency', 's', [
     target(
-      'histogram_quantile(0.99, sum by (le) (rate(' + reqDuration + '_bucket{job="$job", url=~"$endpoint"}[$__rate_interval])))',
+      'histogram_quantile(0.99, sum by (le) (rate(' + reqDuration + '_bucket{job="$job", method=~"$method", url=~"$endpoint"}[$__rate_interval])))',
       'p99'),
   ], 8, 4, 16, 0),
 
-  // ── Rate: requests/sec broken down by endpoint (y=4) ─────────────────────
+  // ── Rate: requests/sec broken down by method and endpoint (y=4) ──────────
 
   tsPanel('Request Rate by Endpoint', 'reqps', [
     target(
-      'sum by (url) (rate(' + reqTotal + '{job="$job", url=~"$endpoint"}[$__rate_interval]))',
-      '{{url}}'),
+      'sum by (method, url) (rate(' + reqTotal + '{job="$job", method=~"$method", url=~"$endpoint"}[$__rate_interval]))',
+      '{{method}} {{url}}'),
   ], 24, 8, 0, 4),
 
-  // ── Errors: 5xx/sec broken down by endpoint (y=12) ───────────────────────
+  // ── Errors: 5xx/sec broken down by method and endpoint (y=12) ────────────
 
   tsPanel('Error Rate by Endpoint (5xx req/s)', 'reqps', [
     target(
-      'sum by (url) (rate(' + reqTotal + '{job="$job", url=~"$endpoint", code=~"5.."}[$__rate_interval]))',
-      '{{url}}'),
+      'sum by (method, url) (rate(' + reqTotal + '{job="$job", method=~"$method", url=~"$endpoint", code=~"5.."}[$__rate_interval]))',
+      '{{method}} {{url}}'),
   ], 24, 8, 0, 12),
 
   // ── Duration (y=20) ───────────────────────────────────────────────────────
@@ -134,21 +145,21 @@ g.dashboard.new('API RED Metrics')
   // Aggregate latency percentiles across all selected endpoints
   tsPanel('Latency Percentiles (aggregate)', 's', [
     target(
-      'histogram_quantile(0.50, sum by (le) (rate(' + reqDuration + '_bucket{job="$job", url=~"$endpoint"}[$__rate_interval])))',
+      'histogram_quantile(0.50, sum by (le) (rate(' + reqDuration + '_bucket{job="$job", method=~"$method", url=~"$endpoint"}[$__rate_interval])))',
       'p50', 'A'),
     target(
-      'histogram_quantile(0.95, sum by (le) (rate(' + reqDuration + '_bucket{job="$job", url=~"$endpoint"}[$__rate_interval])))',
+      'histogram_quantile(0.95, sum by (le) (rate(' + reqDuration + '_bucket{job="$job", method=~"$method", url=~"$endpoint"}[$__rate_interval])))',
       'p95', 'B'),
     target(
-      'histogram_quantile(0.99, sum by (le) (rate(' + reqDuration + '_bucket{job="$job", url=~"$endpoint"}[$__rate_interval])))',
+      'histogram_quantile(0.99, sum by (le) (rate(' + reqDuration + '_bucket{job="$job", method=~"$method", url=~"$endpoint"}[$__rate_interval])))',
       'p99', 'C'),
   ], 12, 8, 0, 20),
 
-  // p99 per endpoint — shows which endpoint is the slowest
+  // p99 per method+endpoint — shows which endpoint is the slowest
   tsPanel('p99 Latency by Endpoint', 's', [
     target(
-      'histogram_quantile(0.99, sum by (le, url) (rate(' + reqDuration + '_bucket{job="$job", url=~"$endpoint"}[$__rate_interval])))',
-      '{{url}}'),
+      'histogram_quantile(0.99, sum by (le, method, url) (rate(' + reqDuration + '_bucket{job="$job", method=~"$method", url=~"$endpoint"}[$__rate_interval])))',
+      '{{method}} {{url}}'),
   ], 12, 8, 12, 20),
 
 ])

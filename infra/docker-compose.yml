@@ -40,6 +40,7 @@ services:
 
   postgres:
     image: postgres:17
+    command: ["postgres", "-c", "max_connections=150"]
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
@@ -68,13 +69,60 @@ services:
       AUTH_TYPE: scram-sha-256
       POOL_MODE: ${PGBOUNCER_POOL_MODE:-transaction}
       MAX_CLIENT_CONN: ${PGBOUNCER_MAX_CLIENT_CONN:-200}
-      DEFAULT_POOL_SIZE: ${PGBOUNCER_DEFAULT_POOL_SIZE:-20}
-      MIN_POOL_SIZE: "5"
-      RESERVE_POOL_SIZE: "5"
+      DEFAULT_POOL_SIZE: ${PGBOUNCER_DEFAULT_POOL_SIZE:-100}
+      MIN_POOL_SIZE: "25"
+      RESERVE_POOL_SIZE: "25"
       IGNORE_STARTUP_PARAMETERS: extra_float_digits
       SERVER_RESET_QUERY: DISCARD ALL
+      STATS_USERS: ${POSTGRES_USER:-postgres}
     ports:
       - "6432:5432"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - lab-network
+
+  postgres_exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:latest
+    container_name: postgres_exporter
+    environment:
+      DATA_SOURCE_URI: "postgres:5432/postgres?sslmode=disable"
+      DATA_SOURCE_USER: ${POSTGRES_USER:-postgres}
+      DATA_SOURCE_PASS: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "9187:9187"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - lab-network
+
+  pgbouncer_exporter:
+    image: prometheuscommunity/pgbouncer-exporter:latest
+    container_name: pgbouncer_exporter
+    command: "--pgBouncer.connectionString=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@pgbouncer:5432/pgbouncer?sslmode=disable"
+    ports:
+      - "9127:9127"
+    depends_on:
+      - pgbouncer
+    restart: unless-stopped
+    networks:
+      - lab-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@admin.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./pgadmin/servers.json:/pgadmin4/servers.json:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -86,3 +134,4 @@ volumes:
   prometheus_data:
   grafana_data:
   pgdata:
+  pgadmin_data:

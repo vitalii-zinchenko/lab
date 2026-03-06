@@ -1,0 +1,487 @@
+{
+   "description": "PgBouncer metrics from pgbouncer_exporter: pool connections, wait time, throughput.",
+   "panels": [
+      {
+         "datasource": {
+            "type": "datasource",
+            "uid": "-- Mixed --"
+         },
+         "fieldConfig": {
+            "defaults": {
+               "unit": "short"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 0,
+            "y": 0
+         },
+         "id": 1,
+         "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "reduceOptions": {
+               "calcs": [
+                  "lastNotNull"
+               ]
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "sum(pgbouncer_pools_client_active_connections{job=\"$job\", database=\"$database\"})",
+               "legendFormat": "active clients",
+               "refId": "A"
+            }
+         ],
+         "title": "Active Clients",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "datasource",
+            "uid": "-- Mixed --"
+         },
+         "fieldConfig": {
+            "defaults": {
+               "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                     {
+                        "color": "green",
+                        "value": null
+                     },
+                     {
+                        "color": "orange",
+                        "value": 1
+                     },
+                     {
+                        "color": "red",
+                        "value": 10
+                     }
+                  ]
+               },
+               "unit": "short"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 6,
+            "y": 0
+         },
+         "id": 2,
+         "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "reduceOptions": {
+               "calcs": [
+                  "lastNotNull"
+               ]
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "sum(pgbouncer_pools_client_waiting_connections{job=\"$job\", database=\"$database\"})",
+               "legendFormat": "waiting clients",
+               "refId": "A"
+            }
+         ],
+         "title": "Waiting Clients",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "datasource",
+            "uid": "-- Mixed --"
+         },
+         "fieldConfig": {
+            "defaults": {
+               "unit": "short"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 12,
+            "y": 0
+         },
+         "id": 3,
+         "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "reduceOptions": {
+               "calcs": [
+                  "lastNotNull"
+               ]
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "sum(pgbouncer_pools_server_active_connections{job=\"$job\", database=\"$database\"})",
+               "legendFormat": "active servers",
+               "refId": "A"
+            }
+         ],
+         "title": "Active Servers",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "datasource",
+            "uid": "-- Mixed --"
+         },
+         "fieldConfig": {
+            "defaults": {
+               "unit": "short"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 18,
+            "y": 0
+         },
+         "id": 4,
+         "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "reduceOptions": {
+               "calcs": [
+                  "lastNotNull"
+               ]
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "sum(pgbouncer_pools_server_idle_connections{job=\"$job\", database=\"$database\"})",
+               "legendFormat": "idle servers",
+               "refId": "A"
+            }
+         ],
+         "title": "Idle Servers",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "datasource",
+            "uid": "-- Mixed --"
+         },
+         "fieldConfig": {
+            "defaults": {
+               "unit": "short"
+            }
+         },
+         "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 4
+         },
+         "id": 5,
+         "options": {
+            "tooltip": {
+               "mode": "multi"
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "sum(pgbouncer_pools_client_active_connections{job=\"$job\", database=\"$database\"})",
+               "legendFormat": "active",
+               "refId": "A"
+            },
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "sum(pgbouncer_pools_client_waiting_connections{job=\"$job\", database=\"$database\"})",
+               "legendFormat": "waiting",
+               "refId": "B"
+            }
+         ],
+         "title": "Client Connections",
+         "type": "timeseries"
+      },
+      {
+         "datasource": {
+            "type": "datasource",
+            "uid": "-- Mixed --"
+         },
+         "fieldConfig": {
+            "defaults": {
+               "unit": "short"
+            }
+         },
+         "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 4
+         },
+         "id": 6,
+         "options": {
+            "tooltip": {
+               "mode": "multi"
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "sum(pgbouncer_pools_server_active_connections{job=\"$job\", database=\"$database\"})",
+               "legendFormat": "active",
+               "refId": "A"
+            },
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "sum(pgbouncer_pools_server_idle_connections{job=\"$job\", database=\"$database\"})",
+               "legendFormat": "idle",
+               "refId": "B"
+            },
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "sum(pgbouncer_pools_server_used_connections{job=\"$job\", database=\"$database\"})",
+               "legendFormat": "used",
+               "refId": "C"
+            }
+         ],
+         "title": "Server Connections",
+         "type": "timeseries"
+      },
+      {
+         "datasource": {
+            "type": "datasource",
+            "uid": "-- Mixed --"
+         },
+         "fieldConfig": {
+            "defaults": {
+               "unit": "ops"
+            }
+         },
+         "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 12
+         },
+         "id": 7,
+         "options": {
+            "tooltip": {
+               "mode": "multi"
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "rate(pgbouncer_stats_totals_sql_transactions_pooled_total{job=\"$job\", database=\"$database\"}[$__rate_interval])",
+               "legendFormat": "xact/s",
+               "refId": "A"
+            }
+         ],
+         "title": "Transaction Rate",
+         "type": "timeseries"
+      },
+      {
+         "datasource": {
+            "type": "datasource",
+            "uid": "-- Mixed --"
+         },
+         "fieldConfig": {
+            "defaults": {
+               "unit": "Bps"
+            }
+         },
+         "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 12
+         },
+         "id": 8,
+         "options": {
+            "tooltip": {
+               "mode": "multi"
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "rate(pgbouncer_stats_totals_received_bytes_total{job=\"$job\", database=\"$database\"}[$__rate_interval])",
+               "legendFormat": "received/s",
+               "refId": "A"
+            },
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "rate(pgbouncer_stats_totals_sent_bytes_total{job=\"$job\", database=\"$database\"}[$__rate_interval])",
+               "legendFormat": "sent/s",
+               "refId": "B"
+            }
+         ],
+         "title": "Network Traffic",
+         "type": "timeseries"
+      },
+      {
+         "datasource": {
+            "type": "datasource",
+            "uid": "-- Mixed --"
+         },
+         "fieldConfig": {
+            "defaults": {
+               "unit": "s"
+            }
+         },
+         "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 20
+         },
+         "id": 9,
+         "options": {
+            "tooltip": {
+               "mode": "multi"
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "max(pgbouncer_pools_client_maxwait_seconds{job=\"$job\", database=\"$database\"})",
+               "legendFormat": "max wait",
+               "refId": "A"
+            }
+         ],
+         "title": "Max Client Wait Time",
+         "type": "timeseries"
+      },
+      {
+         "datasource": {
+            "type": "datasource",
+            "uid": "-- Mixed --"
+         },
+         "fieldConfig": {
+            "defaults": {
+               "unit": "s"
+            }
+         },
+         "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 20
+         },
+         "id": 10,
+         "options": {
+            "tooltip": {
+               "mode": "multi"
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "rate(pgbouncer_stats_totals_queries_duration_seconds_total{job=\"$job\", database=\"$database\"}[$__rate_interval])\n/\nrate(pgbouncer_stats_totals_queries_pooled_total{job=\"$job\", database=\"$database\"}[$__rate_interval])\n",
+               "legendFormat": "avg query duration",
+               "refId": "A"
+            }
+         ],
+         "title": "Avg Query Duration",
+         "type": "timeseries"
+      }
+   ],
+   "refresh": "30s",
+   "schemaVersion": 39,
+   "templating": {
+      "list": [
+         {
+            "label": "Data Source",
+            "name": "datasource",
+            "query": "prometheus",
+            "type": "datasource"
+         },
+         {
+            "datasource": {
+               "type": "prometheus",
+               "uid": "${datasource}"
+            },
+            "label": "Job",
+            "name": "job",
+            "query": "label_values(pgbouncer_up, job)",
+            "refresh": 2,
+            "sort": 1,
+            "type": "query"
+         },
+         {
+            "datasource": {
+               "type": "prometheus",
+               "uid": "${datasource}"
+            },
+            "label": "Database",
+            "name": "database",
+            "query": "label_values(pgbouncer_pools_client_active_connections{job=\"$job\"}, database)",
+            "refresh": 2,
+            "sort": 1,
+            "type": "query"
+         }
+      ]
+   },
+   "time": {
+      "from": "now-1h",
+      "to": "now"
+   },
+   "timezone": "utc",
+   "title": "PgBouncer Overview",
+   "uid": "pgbouncer-overview"
+}

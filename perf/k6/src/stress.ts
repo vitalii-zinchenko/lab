@@ -16,14 +16,14 @@
  *   BASE_URL=http://staging:8080 npm run stress
  */
 import { check, sleep } from 'k6';
-import { createItem, getItem, listItems, deleteItem } from './lib/api';
-import { randomItemName, randomDescription } from './lib/helpers';
+import { createItem, deleteItem, getItem, listItems } from './lib/api';
+import { randomDescription, randomItemName } from './lib/helpers';
 
 export const options = {
   stages: [
-    { duration: '1m',  target: 50  },  // warm up
-    { duration: '2m',  target: 100 },  // moderate pressure
-    { duration: '2m',  target: 200 },  // heavy pressure
+    { duration: '1m',  target: 1000  },  // warm up
+    { duration: '2m',  target: 1000 },  // moderate pressure
+    { duration: '20m',  target: 1000 },  // heavy pressure
     { duration: '1m',  target: 0   },  // recovery
   ],
   thresholds: {
