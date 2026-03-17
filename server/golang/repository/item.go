@@ -3,84 +3,73 @@ package repository
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+
+	"github.com/vitaliizinchenko/lab/model"
+	"github.com/vitaliizinchenko/lab/repository/query"
 )
 
 // ErrNotFound is returned when a queried item does not exist.
 var ErrNotFound = errors.New("item not found")
 
-// Item is the GORM model for the items table.
-type Item struct {
-	ID          uuid.UUID `gorm:"type:uuid;primaryKey"`
-	Name        string    `gorm:"type:varchar(255);not null"`
-	Description *string   `gorm:"type:text"`
-	CreatedAt   time.Time `gorm:"type:timestamptz;not null"`
-}
-
-func (Item) TableName() string {
-	return "items"
-}
-
 // ItemRepository defines persistence operations for items.
 type ItemRepository interface {
-	List(ctx context.Context, limit int) ([]Item, error)
-	Create(ctx context.Context, item Item) (Item, error)
-	GetByID(ctx context.Context, id uuid.UUID) (Item, error)
+	List(ctx context.Context, limit int) ([]model.Item, error)
+	Create(ctx context.Context, item model.Item) (model.Item, error)
+	GetByID(ctx context.Context, id uuid.UUID) (model.Item, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 }
 
 type gormItemRepository struct {
-	db *gorm.DB
+	q *query.Query
 }
 
 // NewItemRepository returns an ItemRepository backed by the given *gorm.DB.
 func NewItemRepository(db *gorm.DB) ItemRepository {
-	return &gormItemRepository{db: db}
+	return &gormItemRepository{q: query.Use(db)}
 }
 
-func (r *gormItemRepository) List(ctx context.Context, limit int) ([]Item, error) {
-	var items []Item
-	result := r.db.WithContext(ctx).
-		Order("created_at DESC").
-		Limit(limit).
-		Find(&items)
-	if result.Error != nil {
-		return nil, result.Error
+func (r *gormItemRepository) List(ctx context.Context, limit int) ([]model.Item, error) {
+	qi := r.q.Item
+	rows, err := qi.WithContext(ctx).Order(qi.CreatedAt.Desc()).Limit(limit).Find()
+	if err != nil {
+		return nil, err
+	}
+	items := make([]model.Item, len(rows))
+	for i, row := range rows {
+		items[i] = *row
 	}
 	return items, nil
 }
 
-func (r *gormItemRepository) Create(ctx context.Context, item Item) (Item, error) {
-	result := r.db.WithContext(ctx).Create(&item)
-	if result.Error != nil {
-		return Item{}, result.Error
+func (r *gormItemRepository) Create(ctx context.Context, item model.Item) (model.Item, error) {
+	if err := r.q.Item.WithContext(ctx).Create(&item); err != nil {
+		return model.Item{}, err
 	}
 	return item, nil
 }
 
-func (r *gormItemRepository) GetByID(ctx context.Context, id uuid.UUID) (Item, error) {
-	var item Item
-	result := r.db.WithContext(ctx).First(&item, "id = ?", id)
-	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return Item{}, ErrNotFound
+func (r *gormItemRepository) GetByID(ctx context.Context, id uuid.UUID) (model.Item, error) {
+	qi := r.q.Item
+	row, err := qi.WithContext(ctx).Where(qi.ID.Eq(id)).First()
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return model.Item{}, ErrNotFound
 	}
-	if result.Error != nil {
-		return Item{}, result.Error
+	if err != nil {
+		return model.Item{}, err
 	}
-	return item, nil
+	return *row, nil
 }
 
 func (r *gormItemRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	result := r.db.WithContext(ctx).
-		Where("id = ?", id).
-		Delete(&Item{})
-	if result.Error != nil {
-		return result.Error
+	qi := r.q.Item
+	info, err := qi.WithContext(ctx).Where(qi.ID.Eq(id)).Delete()
+	if err != nil {
+		return err
 	}
-	if result.RowsAffected == 0 {
+	if info.RowsAffected == 0 {
 		return ErrNotFound
 	}
 	return nil

@@ -14,8 +14,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"github.com/vitaliizinchenko/lab/gen"
-	"github.com/vitaliizinchenko/lab/handler"
+	"github.com/vitaliizinchenko/lab/api"
 	"github.com/vitaliizinchenko/lab/repository"
 )
 
@@ -49,9 +48,10 @@ func main() {
 	sqlDB.SetConnMaxLifetime(5 * time.Minute)
 
 	itemRepo := repository.NewItemRepository(db)
+	eventRepo := repository.NewEventHistoryRepository(db)
 
 	// --- OpenAPI / Swagger ---
-	swagger, err := gen.GetSwagger()
+	swagger, err := api.GetSwagger()
 	if err != nil {
 		log.Fatalf("failed to load swagger spec: %v", err)
 	}
@@ -74,9 +74,9 @@ func main() {
 	// Validate all incoming requests against the OpenAPI spec
 	router.Use(ginmiddleware.OapiRequestValidator(swagger))
 
-	h := handler.New(itemRepo)
-	strictHandler := gen.NewStrictHandler(h, nil)
-	gen.RegisterHandlers(router, strictHandler)
+	h := api.New(itemRepo, eventRepo)
+	strictHandler := api.NewStrictHandler(h, nil)
+	api.RegisterHandlers(router, strictHandler)
 
 	srv := &http.Server{
 		Addr:    ":8080",

@@ -55,6 +55,24 @@ paths:
               schema:
                 $ref: "#/components/schemas/Item"
 
+  /events:
+    post:
+      operationId: CreateEvent
+      summary: Create an event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewEvent"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventHistory"
+
   /items/{id}:
     get:
       operationId: GetItem
@@ -140,4 +158,37 @@ components:
       required: [message]
       properties:
         message:
+          type: string
+
+    EventLevel:
+      type: string
+      enum: [error, warn, info]
+
+    EventHistory:
+      type: object
+      required: [id, level, event_type, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        level:
+          $ref: "#/components/schemas/EventLevel"
+        event_type:
+          type: string
+        details:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    NewEvent:
+      type: object
+      required: [level, event_type]
+      properties:
+        level:
+          $ref: "#/components/schemas/EventLevel"
+        event_type:
+          type: string
+          minLength: 1
+        details:
           type: string
