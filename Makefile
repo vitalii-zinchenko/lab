@@ -1,4 +1,4 @@
-.PHONY: infra-up infra-down db-migrate-up server-up server-down perf-install perf-smoke perf-load perf-stress dashboards dashboards-renderer
+.PHONY: infra-up infra-down db-migrate-up server-up server-down perf-install perf-smoke perf-load perf-stress dashboards dashboards-renderer deploy-dashboards tilt-setup app
 
 POSTGRES_USER             ?= postgres
 POSTGRES_PASSWORD         ?= postgres
@@ -67,6 +67,18 @@ dashboards: dashboards-renderer
 	    jsonnet -J vendor postgres.jsonnet    > /out/postgres.json && \
 	    jsonnet -J vendor pgbouncer.jsonnet   > /out/pgbouncer.json"
 	@echo "Dashboards written to infra/grafana/provisioning/dashboards/"
+
+# Tilt — local dev orchestrator
+tilt-setup:
+	@command -v tilt >/dev/null 2>&1 || { echo "Installing Tilt..."; brew install tilt-dev/tap/tilt; }
+	@command -v air >/dev/null 2>&1 || { echo "Installing Air..."; go install github.com/air-verse/air@latest; }
+	@echo "Tilt and Air are ready."
+
+up:
+	tilt up
+
+deploy-dashboards:
+	./scripts/deploy-dashboards.sh
 
 # Performance tests (requires k6: brew install k6)
 BASE_URL ?= http://localhost:8080
