@@ -40,13 +40,13 @@ db-migrate-up:
 		go run .
 
 server-up:
-	docker compose -f server/golang/docker-compose.yml up -d --build
+	docker compose -f services/server/docker-compose.yml up -d --build
 	@echo ""
 	@echo "Services running:"
 	@echo "  API: http://localhost:8080"
 
 server-down:
-	docker compose -f server/golang/docker-compose.yml down
+	docker compose -f services/server/docker-compose.yml down
 
 # Grafana dashboards — render Jsonnet → JSON via Docker (no local tooling needed)
 # On first run jb downloads grafonnet (~30 s); subsequent runs use the cached image.

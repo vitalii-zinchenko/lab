@@ -47,14 +47,14 @@ local_resource(
 # Services
 # ============================================================
 local_resource(
-    'go-server',
+    'server',
     cmd='./scripts/kill-port.sh 8080',
     serve_cmd=str(local('go env GOPATH', quiet=True)).strip() + '/bin/air',
-    serve_dir='server/golang',
+    serve_dir='services/server',
     serve_env={
         'DATABASE_URL': 'postgres://postgres:postgres@localhost:6432/app?sslmode=disable',
     },
-    deps=['server/golang/cmd', 'server/golang/api', 'server/golang/repository', 'server/golang/model'],
+    deps=['services/server/cmd', 'services/server/api', 'services/server/repository', 'services/server/model'],
     resource_deps=['db-migrate', 'pgbouncer'],
     labels=['services'],
     readiness_probe=probe(

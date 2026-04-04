@@ -26,7 +26,7 @@ make perf-install
 **3. Start the server:**
 ```bash
 make server-up              # Docker
-# or:  go run ./cmd/server  (from server/golang/)
+# or:  go run ./cmd/server  (from services/server/)
 ```
 
 ---

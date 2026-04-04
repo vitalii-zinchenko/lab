@@ -24,7 +24,7 @@ DROP TABLE IF EXISTS items;
 - `description` is nullable (maps to `*string`)
 - Follows the same Goose pattern as `00001_create_users_table.sql`
 
-### 2. Repository Package — `/Users/vitaliizinchenko/Projects/lab/server/golang/repository/item.go`
+### 2. Repository Package — `/Users/vitaliizinchenko/Projects/lab/services/server/repository/item.go`
 
 **GORM model:**
 ```go
@@ -64,7 +64,7 @@ type ItemRepository interface {
 
 ## Files to Modify
 
-### 3. Handler — `/Users/vitaliizinchenko/Projects/lab/server/golang/handler/handler.go`
+### 3. Handler — `/Users/vitaliizinchenko/Projects/lab/services/server/handler/handler.go`
 
 - Remove `sync.RWMutex` + in-memory `map`
 - `Handler` struct holds `items repository.ItemRepository`
@@ -74,7 +74,7 @@ type ItemRepository interface {
 - 404 errors: `errors.Is(err, repository.ErrNotFound)` → return the appropriate 404 response
 - Other errors: return `nil, err` → strict handler produces HTTP 500
 
-### 4. Main — `/Users/vitaliizinchenko/Projects/lab/server/golang/cmd/server/main.go`
+### 4. Main — `/Users/vitaliizinchenko/Projects/lab/services/server/cmd/server/main.go`
 
 ```go
 dbURL := os.Getenv("DATABASE_URL")
@@ -91,7 +91,7 @@ h := handler.New(itemRepo)
 
 - No `AutoMigrate` — DDL goes through Goose, not GORM (PgBouncer transaction pool mode incompatible with DDL in transactions)
 
-### 5. go.mod — `/Users/vitaliizinchenko/Projects/lab/server/golang/go.mod`
+### 5. go.mod — `/Users/vitaliizinchenko/Projects/lab/services/server/go.mod`
 
 Add via `go get`:
 ```
@@ -131,5 +131,5 @@ Run `go mod tidy` after.
 - `gen/api.gen.go` — generated code, never touched
 - `infra/migrate/main.go` — migration runner unchanged
 - `infra/docker-compose.yml` — infra unchanged
-- `server/golang/docker-compose.yml` — DATABASE_URL already configured
+- `services/server/docker-compose.yml` — DATABASE_URL already configured
 - `api/openapi.yaml` — spec unchanged
