@@ -17,6 +17,7 @@ dc_resource('pgbouncer',           labels=['infrastructure'], resource_deps=['po
 dc_resource('postgres_exporter',   labels=['infrastructure'], resource_deps=['postgres'])
 dc_resource('pgbouncer_exporter',  labels=['infrastructure'], resource_deps=['pgbouncer'])
 dc_resource('pgadmin',             labels=['infrastructure'], resource_deps=['postgres'])
+dc_resource('clickhouse',          labels=['infrastructure'])
 
 # ============================================================
 # Setup
@@ -26,6 +27,14 @@ local_resource(
     cmd='cd infra/migrate && DATABASE_URL="postgres://postgres:postgres@localhost:5432/app?sslmode=disable" MIGRATIONS_DIR="' + os.getcwd() + '/infra/migrations" go run .',
     deps=['infra/migrations'],
     resource_deps=['postgres'],
+    labels=['setup'],
+)
+
+local_resource(
+    'ch-migrate',
+    cmd='cd infra/ch_migrate && CLICKHOUSE_URL="clickhouse://localhost:9000/default" MIGRATIONS_DIR="' + os.getcwd() + '/infra/ch_migrations" go run .',
+    deps=['infra/ch_migrations'],
+    resource_deps=['clickhouse'],
     labels=['setup'],
 )
 
@@ -53,9 +62,10 @@ local_resource(
     serve_dir='services/server',
     serve_env={
         'DATABASE_URL': 'postgres://postgres:postgres@localhost:6432/app?sslmode=disable',
+        'CLICKHOUSE_URL': 'clickhouse://localhost:9000/default',
     },
     deps=['services/server/cmd', 'services/server/api', 'services/server/repository', 'services/server/model'],
-    resource_deps=['db-migrate', 'pgbouncer'],
+    resource_deps=['db-migrate', 'ch-migrate', 'pgbouncer'],
     labels=['services'],
     readiness_probe=probe(
         period_secs=5,

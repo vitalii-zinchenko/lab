@@ -78,6 +78,9 @@ type ListItemsParams struct {
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
+// CreateChEventJSONRequestBody defines body for CreateChEvent for application/json ContentType.
+type CreateChEventJSONRequestBody = NewEvent
+
 // CreateEventJSONRequestBody defines body for CreateEvent for application/json ContentType.
 type CreateEventJSONRequestBody = NewEvent
 
@@ -86,6 +89,9 @@ type CreateItemJSONRequestBody = NewItem
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// Create a ClickHouse event (test endpoint)
+	// (POST /ch-events)
+	CreateChEvent(c *gin.Context)
 	// Create an event
 	// (POST /events)
 	CreateEvent(c *gin.Context)
@@ -114,6 +120,19 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(c *gin.Context)
+
+// CreateChEvent operation middleware
+func (siw *ServerInterfaceWrapper) CreateChEvent(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.CreateChEvent(c)
+}
 
 // CreateEvent operation middleware
 func (siw *ServerInterfaceWrapper) CreateEvent(c *gin.Context) {
@@ -255,12 +274,30 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		ErrorHandler:       errorHandler,
 	}
 
+	router.POST(options.BaseURL+"/ch-events", wrapper.CreateChEvent)
 	router.POST(options.BaseURL+"/events", wrapper.CreateEvent)
 	router.GET(options.BaseURL+"/health", wrapper.GetHealth)
 	router.GET(options.BaseURL+"/items", wrapper.ListItems)
 	router.POST(options.BaseURL+"/items", wrapper.CreateItem)
 	router.DELETE(options.BaseURL+"/items/:id", wrapper.DeleteItem)
 	router.GET(options.BaseURL+"/items/:id", wrapper.GetItem)
+}
+
+type CreateChEventRequestObject struct {
+	Body *CreateChEventJSONRequestBody
+}
+
+type CreateChEventResponseObject interface {
+	VisitCreateChEventResponse(w http.ResponseWriter) error
+}
+
+type CreateChEvent201JSONResponse EventHistory
+
+func (response CreateChEvent201JSONResponse) VisitCreateChEventResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type CreateEventRequestObject struct {
@@ -383,6 +420,9 @@ func (response GetItem404JSONResponse) VisitGetItemResponse(w http.ResponseWrite
 
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
+	// Create a ClickHouse event (test endpoint)
+	// (POST /ch-events)
+	CreateChEvent(ctx context.Context, request CreateChEventRequestObject) (CreateChEventResponseObject, error)
 	// Create an event
 	// (POST /events)
 	CreateEvent(ctx context.Context, request CreateEventRequestObject) (CreateEventResponseObject, error)
@@ -413,6 +453,39 @@ func NewStrictHandler(ssi StrictServerInterface, middlewares []StrictMiddlewareF
 type strictHandler struct {
 	ssi         StrictServerInterface
 	middlewares []StrictMiddlewareFunc
+}
+
+// CreateChEvent operation middleware
+func (sh *strictHandler) CreateChEvent(ctx *gin.Context) {
+	var request CreateChEventRequestObject
+
+	var body CreateChEventJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateChEvent(ctx, request.(CreateChEventRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateChEvent")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(CreateChEventResponseObject); ok {
+		if err := validResponse.VisitCreateChEventResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
 }
 
 // CreateEvent operation middleware
@@ -590,19 +663,20 @@ func (sh *strictHandler) GetItem(ctx *gin.Context, id openapi_types.UUID) {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/8RWT0/rOBD/KtHsHr1tyntccmMBQbUVu3eEkEmmrdnYDvYEtqry3VceJ/2bUhDwuLn2",
-	"2DO/PzPpEnKrK2vQkIdsCT6fo5a8vHTOurConK3QkULe1ui9nGFY0qJCyMCTU2YGTSPA4VOtHBaQ3a4C",
-	"70QXaB8eMSdoBFw+o6Fr5cm6xX6K3KEkLO4lhV9T63RYQSEJ/yClEcRuagEFklSl7ylLAIZs93G751gV",
-	"W2nqWhV9GUp8xjJE/u5wChn8NlxTN2x5GzKwCUfu8sGvxke2ShKbeA+SNemyo6l1eA5ZHgEv0hkQoMzU",
-	"btxel32NsqT5PsmeJNX+uIxtXF9hY0J9UL2zd4nnc6cqUtZ8RCEj9Rt8yXc5VGzU2ofvBl+Y+32Mb3eb",
-	"VmaCZhYUGH2BqXr8dABJv1jHmO8o1fK/DsbJ6al4HdZOjfzGflUhjF0b8ioqw9lEPiRn/4xBwDM6z0XB",
-	"aJAO0lCLrdDISkEGPwbp4AcIqCTNGcaQ8fOysp4FCyhlwDUuIINzFjqqGatDT3/agqdPbg21MsuqKlXO",
-	"94aPPpISZTgm0soszTZ+cjXyhq+s8ZH1k3T0aXm3Rinn3tK0RV6wKr7WWoaJ2+4m0iTYFi1gOF+Nihn2",
-	"cHiF1A6TPTjpp8FpM/QA+fuvHQwxNMnnmP8bAShC7Q/WP1GexhwRnOOkRkLnIbtdggoJnmp0i242ZFAq",
-	"rYJZ1nUXOJV1SZCdpCJ0hNJhFI/SlPuh/bXyuTKEM3TQNHcf5GsF6zXiuL+bVXbpnOz1Q2AhsdMkPrrN",
-	"KJ/JsuwOxavdxBm/rJkinl/bS+uc7+shFe91DhwuVdFEw5RIuM/fBe+3/PVZMQy2tRP5i7XNwqYtj3wX",
-	"e+z3c2/0w41NzlsKGwE/Y8jnDCj+o9LD6o2lZGprs8trZKfjNXlYJOOLUNShofR9PKZf7rww9L5Zjiuk",
-	"XS2apvk/AAD//wzYjaI5DAAA",
+	"H4sIAAAAAAAC/+yWTW/jNhCG/4ow7aEFuLac3b3otvUuNkaNtPcgCBhpbDMRSYUcJTUM/feCQ8mfcpwg",
+	"SXPpTR9DzrzPOxxpBbnVlTVoyEO2Ap8vUEu+/OGcdeGicrZCRwr5sUbv5RzDJS0rhAw8OWXm0DQCHN7X",
+	"ymEB2eU68Ep0gfbmFnOCRsCPBzR0rjxZtzxMkTuUhMW1pHA3s06HKygk4SdSGkHspxZQIElV+p6yBGDI",
+	"dh0f97xWxU6aulZFX4YSH7AMkb86nEEGvww36IYttyELm3LkPg/eNW6yU5LY1nsU1rTLjqbWYTtkewQ8",
+	"SmdAgDIzu7V6U/Y5ypIWh5A9Sar9aRvbuL7CJoT6qHvfXmSez52qSFnzGoeM1M/oS17LoWKr1j59F/jI",
+	"7A81Pr/btDJTNPPgwOgdmqqnn44o6TfrFPkOqZb/dDLOvn4VT8vaq5H3OKwqhHHXhryKyvBuKm+Sb39P",
+	"QMADOs9FwWiQDtJQi63QyEpBBp8H6eAzCKgkLVjGMF98YgR8V1nPngWhMkibFJDBmL0eL6KlsUT09Ict",
+	"eATl1lDrtayqUuW8cnjrI5noxSmn1h3T7EIgVyM/8JU1PqI/S0dvlndnnnLuHWNb7QVb42utZRi77dNE",
+	"JuNS5XfntvaYMMXkN0JPCZqissrQ77xu+DzA/+Pdx2si1AhxsR7Hc+xh+BOpHdgHctI3k9Nm6BHy1597",
+	"GmJoki8wv4sCFKH2R+ufKk8Tjgin00mNhM5DdrkCFRLc1+iW3fzNoFRahWbZ1F3gTNYlQXaWijB1lA6f",
+	"u1Ga8sxp79azRBnCOTpomqtX8lrLegocz9BmnV06J3v7IVBI7CyJm+4S5XeyLLuX4snTxBnf7TBFPf/t",
+	"WdrkfNkZUnFd14HDlSqa2DAlEh7y+87PW359rRg+HptO5L+CXQrbbXni36On/b4cfF7hwibjFmEj4EsM",
+	"eZsBxT+DPVQvLCUzW5t9rpFOxzW5WSaT76GoY0Pp4zim7955Yeh9sB0/kfa9aJrm3wAAAP//0Q0Ozp0N",
+	"AAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

@@ -1,11 +1,13 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 	"os"
 	"time"
 
+	_ "github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/gin-gonic/gin"
 	ginmiddleware "github.com/oapi-codegen/gin-middleware"
 	"github.com/prometheus/client_golang/prometheus"
@@ -50,6 +52,20 @@ func main() {
 	itemRepo := repository.NewItemRepository(db)
 	eventRepo := repository.NewEventHistoryRepository(db)
 
+	// --- ClickHouse ---
+	chURL := os.Getenv("CLICKHOUSE_URL")
+	if chURL == "" {
+		log.Fatal("CLICKHOUSE_URL environment variable is required")
+	}
+
+	chDB, err := sql.Open("clickhouse", chURL)
+	if err != nil {
+		log.Fatalf("failed to connect to clickhouse: %v", err)
+	}
+	defer chDB.Close()
+
+	chEventRepo := repository.NewChEventRepository(chDB)
+
 	// --- OpenAPI / Swagger ---
 	swagger, err := api.GetSwagger()
 	if err != nil {
@@ -74,7 +90,7 @@ func main() {
 	// Validate all incoming requests against the OpenAPI spec
 	router.Use(ginmiddleware.OapiRequestValidator(swagger))
 
-	h := api.New(itemRepo, eventRepo)
+	h := api.New(itemRepo, eventRepo, chEventRepo)
 	strictHandler := api.NewStrictHandler(h, nil)
 	api.RegisterHandlers(router, strictHandler)
 

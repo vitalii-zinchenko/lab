@@ -130,8 +130,30 @@ services:
     networks:
       - lab-network
 
+  clickhouse:
+    image: clickhouse/clickhouse-server:24
+    container_name: clickhouse
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    environment:
+      CLICKHOUSE_DB: ${CLICKHOUSE_DB:-default}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-default}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-}
+    healthcheck:
+      test: ["CMD-SHELL", "clickhouse-client --query 'SELECT 1'"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - lab-network
+
 volumes:
   prometheus_data:
   grafana_data:
   pgdata:
   pgadmin_data:
+  clickhouse_data:

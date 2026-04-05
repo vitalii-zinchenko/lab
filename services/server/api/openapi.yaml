@@ -73,6 +73,24 @@ paths:
               schema:
                 $ref: "#/components/schemas/EventHistory"
 
+  /ch-events:
+    post:
+      operationId: CreateChEvent
+      summary: Create a ClickHouse event (test endpoint)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewEvent"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventHistory"
+
   /items/{id}:
     get:
       operationId: GetItem
