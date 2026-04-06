@@ -16,6 +16,8 @@ func main() {
 	g.ApplyBasic(
 		model.Item{},
 		model.EventHistory{},
+		model.User{},
+		model.ApiKey{},
 	)
 
 	g.Execute()

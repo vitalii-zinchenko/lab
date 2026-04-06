@@ -17,29 +17,37 @@ import (
 
 var (
 	Q            = new(Query)
+	ApiKey       *apiKey
 	EventHistory *eventHistory
 	Item         *item
+	User         *user
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
+	ApiKey = &Q.ApiKey
 	EventHistory = &Q.EventHistory
 	Item = &Q.Item
+	User = &Q.User
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
 		db:           db,
+		ApiKey:       newApiKey(db, opts...),
 		EventHistory: newEventHistory(db, opts...),
 		Item:         newItem(db, opts...),
+		User:         newUser(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
+	ApiKey       apiKey
 	EventHistory eventHistory
 	Item         item
+	User         user
 }
 
 func (q *Query) Available() bool { return q.db != nil }
@@ -47,8 +55,10 @@ func (q *Query) Available() bool { return q.db != nil }
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
 		db:           db,
+		ApiKey:       q.ApiKey.clone(db),
 		EventHistory: q.EventHistory.clone(db),
 		Item:         q.Item.clone(db),
+		User:         q.User.clone(db),
 	}
 }
 
@@ -63,20 +73,26 @@ func (q *Query) WriteDB() *Query {
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
 		db:           db,
+		ApiKey:       q.ApiKey.replaceDB(db),
 		EventHistory: q.EventHistory.replaceDB(db),
 		Item:         q.Item.replaceDB(db),
+		User:         q.User.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
+	ApiKey       IApiKeyDo
 	EventHistory IEventHistoryDo
 	Item         IItemDo
+	User         IUserDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
+		ApiKey:       q.ApiKey.WithContext(ctx),
 		EventHistory: q.EventHistory.WithContext(ctx),
 		Item:         q.Item.WithContext(ctx),
+		User:         q.User.WithContext(ctx),
 	}
 }
 

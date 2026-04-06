@@ -17,6 +17,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/vitaliizinchenko/lab/api"
+	"github.com/vitaliizinchenko/lab/api/middleware"
 	"github.com/vitaliizinchenko/lab/repository"
 )
 
@@ -49,8 +50,15 @@ func main() {
 	sqlDB.SetMaxIdleConns(25)
 	sqlDB.SetConnMaxLifetime(5 * time.Minute)
 
+	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
+	if len(jwtSecret) == 0 {
+		log.Fatal("JWT_SECRET environment variable is required")
+	}
+
 	itemRepo := repository.NewItemRepository(db)
 	eventRepo := repository.NewEventHistoryRepository(db)
+	userRepo := repository.NewUserRepository(db)
+	apiKeyRepo := repository.NewApiKeyRepository(db)
 
 	// --- ClickHouse ---
 	chURL := os.Getenv("CLICKHOUSE_URL")
@@ -89,8 +97,9 @@ func main() {
 
 	// Validate all incoming requests against the OpenAPI spec
 	router.Use(ginmiddleware.OapiRequestValidator(swagger))
+	router.Use(middleware.Auth(jwtSecret))
 
-	h := api.New(itemRepo, eventRepo, chEventRepo)
+	h := api.New(itemRepo, eventRepo, chEventRepo, userRepo, apiKeyRepo, jwtSecret)
 	strictHandler := api.NewStrictHandler(h, nil)
 	api.RegisterHandlers(router, strictHandler)
 

@@ -23,12 +23,40 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+const (
+	BearerAuthScopes = "bearerAuth.Scopes"
+)
+
 // Defines values for EventLevel.
 const (
 	EventLevelError EventLevel = "error"
 	EventLevelInfo  EventLevel = "info"
 	EventLevelWarn  EventLevel = "warn"
 )
+
+// Defines values for TokenRequestGrantType.
+const (
+	ClientCredentials TokenRequestGrantType = "client_credentials"
+)
+
+// ApiKey defines model for ApiKey.
+type ApiKey struct {
+	ClientId   openapi_types.UUID `json:"client_id"`
+	CreatedAt  time.Time          `json:"created_at"`
+	ExpiresAt  *time.Time         `json:"expires_at,omitempty"`
+	LastUsedAt *time.Time         `json:"last_used_at,omitempty"`
+	Name       *string            `json:"name,omitempty"`
+	RevokedAt  *time.Time         `json:"revoked_at,omitempty"`
+}
+
+// CreatedApiKey defines model for CreatedApiKey.
+type CreatedApiKey struct {
+	ClientId     openapi_types.UUID `json:"client_id"`
+	ClientSecret string             `json:"client_secret"`
+	CreatedAt    time.Time          `json:"created_at"`
+	ExpiresAt    *time.Time         `json:"expires_at,omitempty"`
+	Name         *string            `json:"name,omitempty"`
+}
 
 // Error defines model for Error.
 type Error struct {
@@ -60,6 +88,13 @@ type Item struct {
 	Name        string             `json:"name"`
 }
 
+// NewApiKey defines model for NewApiKey.
+type NewApiKey struct {
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
+	Name      *string    `json:"name,omitempty"`
+	UserId    int64      `json:"user_id"`
+}
+
 // NewEvent defines model for NewEvent.
 type NewEvent struct {
 	Details   *string    `json:"details,omitempty"`
@@ -73,10 +108,44 @@ type NewItem struct {
 	Name        string  `json:"name"`
 }
 
+// NewUser defines model for NewUser.
+type NewUser struct {
+	Email    openapi_types.Email `json:"email"`
+	Username string              `json:"username"`
+}
+
+// TokenRequest defines model for TokenRequest.
+type TokenRequest struct {
+	ClientId     openapi_types.UUID    `json:"client_id"`
+	ClientSecret string                `json:"client_secret"`
+	GrantType    TokenRequestGrantType `json:"grant_type"`
+}
+
+// TokenRequestGrantType defines model for TokenRequest.GrantType.
+type TokenRequestGrantType string
+
+// TokenResponse defines model for TokenResponse.
+type TokenResponse struct {
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int64  `json:"expires_in"`
+	TokenType   string `json:"token_type"`
+}
+
+// User defines model for User.
+type User struct {
+	CreatedAt time.Time `json:"createdAt"`
+	Email     string    `json:"email"`
+	Id        int64     `json:"id"`
+	Username  string    `json:"username"`
+}
+
 // ListItemsParams defines parameters for ListItems.
 type ListItemsParams struct {
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 }
+
+// CreateApiKeyJSONRequestBody defines body for CreateApiKey for application/json ContentType.
+type CreateApiKeyJSONRequestBody = NewApiKey
 
 // CreateChEventJSONRequestBody defines body for CreateChEvent for application/json ContentType.
 type CreateChEventJSONRequestBody = NewEvent
@@ -87,8 +156,23 @@ type CreateEventJSONRequestBody = NewEvent
 // CreateItemJSONRequestBody defines body for CreateItem for application/json ContentType.
 type CreateItemJSONRequestBody = NewItem
 
+// CreateTokenJSONRequestBody defines body for CreateToken for application/json ContentType.
+type CreateTokenJSONRequestBody = TokenRequest
+
+// CreateUserJSONRequestBody defines body for CreateUser for application/json ContentType.
+type CreateUserJSONRequestBody = NewUser
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// List API keys for the authenticated user
+	// (GET /api-keys)
+	ListApiKeys(c *gin.Context)
+	// Create a new API key for a user
+	// (POST /api-keys)
+	CreateApiKey(c *gin.Context)
+	// Revoke an API key
+	// (DELETE /api-keys/{clientId})
+	RevokeApiKey(c *gin.Context, clientId openapi_types.UUID)
 	// Create a ClickHouse event (test endpoint)
 	// (POST /ch-events)
 	CreateChEvent(c *gin.Context)
@@ -110,6 +194,12 @@ type ServerInterface interface {
 	// Get an item by ID
 	// (GET /items/{id})
 	GetItem(c *gin.Context, id openapi_types.UUID)
+	// Exchange client credentials for a JWT access token
+	// (POST /token)
+	CreateToken(c *gin.Context)
+	// Create a new user
+	// (POST /users)
+	CreateUser(c *gin.Context)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -120,6 +210,60 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(c *gin.Context)
+
+// ListApiKeys operation middleware
+func (siw *ServerInterfaceWrapper) ListApiKeys(c *gin.Context) {
+
+	c.Set(BearerAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.ListApiKeys(c)
+}
+
+// CreateApiKey operation middleware
+func (siw *ServerInterfaceWrapper) CreateApiKey(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.CreateApiKey(c)
+}
+
+// RevokeApiKey operation middleware
+func (siw *ServerInterfaceWrapper) RevokeApiKey(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "clientId" -------------
+	var clientId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "clientId", c.Param("clientId"), &clientId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter clientId: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(BearerAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.RevokeApiKey(c, clientId)
+}
 
 // CreateChEvent operation middleware
 func (siw *ServerInterfaceWrapper) CreateChEvent(c *gin.Context) {
@@ -247,6 +391,32 @@ func (siw *ServerInterfaceWrapper) GetItem(c *gin.Context) {
 	siw.Handler.GetItem(c, id)
 }
 
+// CreateToken operation middleware
+func (siw *ServerInterfaceWrapper) CreateToken(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.CreateToken(c)
+}
+
+// CreateUser operation middleware
+func (siw *ServerInterfaceWrapper) CreateUser(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.CreateUser(c)
+}
+
 // GinServerOptions provides options for the Gin server.
 type GinServerOptions struct {
 	BaseURL      string
@@ -274,6 +444,9 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		ErrorHandler:       errorHandler,
 	}
 
+	router.GET(options.BaseURL+"/api-keys", wrapper.ListApiKeys)
+	router.POST(options.BaseURL+"/api-keys", wrapper.CreateApiKey)
+	router.DELETE(options.BaseURL+"/api-keys/:clientId", wrapper.RevokeApiKey)
 	router.POST(options.BaseURL+"/ch-events", wrapper.CreateChEvent)
 	router.POST(options.BaseURL+"/events", wrapper.CreateEvent)
 	router.GET(options.BaseURL+"/health", wrapper.GetHealth)
@@ -281,6 +454,93 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/items", wrapper.CreateItem)
 	router.DELETE(options.BaseURL+"/items/:id", wrapper.DeleteItem)
 	router.GET(options.BaseURL+"/items/:id", wrapper.GetItem)
+	router.POST(options.BaseURL+"/token", wrapper.CreateToken)
+	router.POST(options.BaseURL+"/users", wrapper.CreateUser)
+}
+
+type ListApiKeysRequestObject struct {
+}
+
+type ListApiKeysResponseObject interface {
+	VisitListApiKeysResponse(w http.ResponseWriter) error
+}
+
+type ListApiKeys200JSONResponse []ApiKey
+
+func (response ListApiKeys200JSONResponse) VisitListApiKeysResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type ListApiKeys401JSONResponse Error
+
+func (response ListApiKeys401JSONResponse) VisitListApiKeysResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateApiKeyRequestObject struct {
+	Body *CreateApiKeyJSONRequestBody
+}
+
+type CreateApiKeyResponseObject interface {
+	VisitCreateApiKeyResponse(w http.ResponseWriter) error
+}
+
+type CreateApiKey201JSONResponse CreatedApiKey
+
+func (response CreateApiKey201JSONResponse) VisitCreateApiKeyResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateApiKey404JSONResponse Error
+
+func (response CreateApiKey404JSONResponse) VisitCreateApiKeyResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type RevokeApiKeyRequestObject struct {
+	ClientId openapi_types.UUID `json:"clientId"`
+}
+
+type RevokeApiKeyResponseObject interface {
+	VisitRevokeApiKeyResponse(w http.ResponseWriter) error
+}
+
+type RevokeApiKey204Response struct {
+}
+
+func (response RevokeApiKey204Response) VisitRevokeApiKeyResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type RevokeApiKey401JSONResponse Error
+
+func (response RevokeApiKey401JSONResponse) VisitRevokeApiKeyResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type RevokeApiKey404JSONResponse Error
+
+func (response RevokeApiKey404JSONResponse) VisitRevokeApiKeyResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type CreateChEventRequestObject struct {
@@ -418,8 +678,78 @@ func (response GetItem404JSONResponse) VisitGetItemResponse(w http.ResponseWrite
 	return json.NewEncoder(w).Encode(response)
 }
 
+type CreateTokenRequestObject struct {
+	Body *CreateTokenJSONRequestBody
+}
+
+type CreateTokenResponseObject interface {
+	VisitCreateTokenResponse(w http.ResponseWriter) error
+}
+
+type CreateToken200JSONResponse TokenResponse
+
+func (response CreateToken200JSONResponse) VisitCreateTokenResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateToken400JSONResponse Error
+
+func (response CreateToken400JSONResponse) VisitCreateTokenResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateToken401JSONResponse Error
+
+func (response CreateToken401JSONResponse) VisitCreateTokenResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateUserRequestObject struct {
+	Body *CreateUserJSONRequestBody
+}
+
+type CreateUserResponseObject interface {
+	VisitCreateUserResponse(w http.ResponseWriter) error
+}
+
+type CreateUser201JSONResponse User
+
+func (response CreateUser201JSONResponse) VisitCreateUserResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateUser409JSONResponse Error
+
+func (response CreateUser409JSONResponse) VisitCreateUserResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
+	// List API keys for the authenticated user
+	// (GET /api-keys)
+	ListApiKeys(ctx context.Context, request ListApiKeysRequestObject) (ListApiKeysResponseObject, error)
+	// Create a new API key for a user
+	// (POST /api-keys)
+	CreateApiKey(ctx context.Context, request CreateApiKeyRequestObject) (CreateApiKeyResponseObject, error)
+	// Revoke an API key
+	// (DELETE /api-keys/{clientId})
+	RevokeApiKey(ctx context.Context, request RevokeApiKeyRequestObject) (RevokeApiKeyResponseObject, error)
 	// Create a ClickHouse event (test endpoint)
 	// (POST /ch-events)
 	CreateChEvent(ctx context.Context, request CreateChEventRequestObject) (CreateChEventResponseObject, error)
@@ -441,6 +771,12 @@ type StrictServerInterface interface {
 	// Get an item by ID
 	// (GET /items/{id})
 	GetItem(ctx context.Context, request GetItemRequestObject) (GetItemResponseObject, error)
+	// Exchange client credentials for a JWT access token
+	// (POST /token)
+	CreateToken(ctx context.Context, request CreateTokenRequestObject) (CreateTokenResponseObject, error)
+	// Create a new user
+	// (POST /users)
+	CreateUser(ctx context.Context, request CreateUserRequestObject) (CreateUserResponseObject, error)
 }
 
 type StrictHandlerFunc = strictgin.StrictGinHandlerFunc
@@ -453,6 +789,91 @@ func NewStrictHandler(ssi StrictServerInterface, middlewares []StrictMiddlewareF
 type strictHandler struct {
 	ssi         StrictServerInterface
 	middlewares []StrictMiddlewareFunc
+}
+
+// ListApiKeys operation middleware
+func (sh *strictHandler) ListApiKeys(ctx *gin.Context) {
+	var request ListApiKeysRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.ListApiKeys(ctx, request.(ListApiKeysRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "ListApiKeys")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(ListApiKeysResponseObject); ok {
+		if err := validResponse.VisitListApiKeysResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreateApiKey operation middleware
+func (sh *strictHandler) CreateApiKey(ctx *gin.Context) {
+	var request CreateApiKeyRequestObject
+
+	var body CreateApiKeyJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateApiKey(ctx, request.(CreateApiKeyRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateApiKey")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(CreateApiKeyResponseObject); ok {
+		if err := validResponse.VisitCreateApiKeyResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// RevokeApiKey operation middleware
+func (sh *strictHandler) RevokeApiKey(ctx *gin.Context, clientId openapi_types.UUID) {
+	var request RevokeApiKeyRequestObject
+
+	request.ClientId = clientId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.RevokeApiKey(ctx, request.(RevokeApiKeyRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "RevokeApiKey")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(RevokeApiKeyResponseObject); ok {
+		if err := validResponse.VisitRevokeApiKeyResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
 }
 
 // CreateChEvent operation middleware
@@ -660,23 +1081,99 @@ func (sh *strictHandler) GetItem(ctx *gin.Context, id openapi_types.UUID) {
 	}
 }
 
+// CreateToken operation middleware
+func (sh *strictHandler) CreateToken(ctx *gin.Context) {
+	var request CreateTokenRequestObject
+
+	var body CreateTokenJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateToken(ctx, request.(CreateTokenRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateToken")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(CreateTokenResponseObject); ok {
+		if err := validResponse.VisitCreateTokenResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreateUser operation middleware
+func (sh *strictHandler) CreateUser(ctx *gin.Context) {
+	var request CreateUserRequestObject
+
+	var body CreateUserJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateUser(ctx, request.(CreateUserRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateUser")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(CreateUserResponseObject); ok {
+		if err := validResponse.VisitCreateUserResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/+yWTW/jNhCG/4ow7aEFuLac3b3otvUuNkaNtPcgCBhpbDMRSYUcJTUM/feCQ8mfcpwg",
-	"SXPpTR9DzrzPOxxpBbnVlTVoyEO2Ap8vUEu+/OGcdeGicrZCRwr5sUbv5RzDJS0rhAw8OWXm0DQCHN7X",
-	"ymEB2eU68Ep0gfbmFnOCRsCPBzR0rjxZtzxMkTuUhMW1pHA3s06HKygk4SdSGkHspxZQIElV+p6yBGDI",
-	"dh0f97xWxU6aulZFX4YSH7AMkb86nEEGvww36IYttyELm3LkPg/eNW6yU5LY1nsU1rTLjqbWYTtkewQ8",
-	"SmdAgDIzu7V6U/Y5ypIWh5A9Sar9aRvbuL7CJoT6qHvfXmSez52qSFnzGoeM1M/oS17LoWKr1j59F/jI",
-	"7A81Pr/btDJTNPPgwOgdmqqnn44o6TfrFPkOqZb/dDLOvn4VT8vaq5H3OKwqhHHXhryKyvBuKm+Sb39P",
-	"QMADOs9FwWiQDtJQi63QyEpBBp8H6eAzCKgkLVjGMF98YgR8V1nPngWhMkibFJDBmL0eL6KlsUT09Ict",
-	"eATl1lDrtayqUuW8cnjrI5noxSmn1h3T7EIgVyM/8JU1PqI/S0dvlndnnnLuHWNb7QVb42utZRi77dNE",
-	"JuNS5XfntvaYMMXkN0JPCZqissrQ77xu+DzA/+Pdx2si1AhxsR7Hc+xh+BOpHdgHctI3k9Nm6BHy1597",
-	"GmJoki8wv4sCFKH2R+ufKk8Tjgin00mNhM5DdrkCFRLc1+iW3fzNoFRahWbZ1F3gTNYlQXaWijB1lA6f",
-	"u1Ga8sxp79azRBnCOTpomqtX8lrLegocz9BmnV06J3v7IVBI7CyJm+4S5XeyLLuX4snTxBnf7TBFPf/t",
-	"WdrkfNkZUnFd14HDlSqa2DAlEh7y+87PW359rRg+HptO5L+CXQrbbXni36On/b4cfF7hwibjFmEj4EsM",
-	"eZsBxT+DPVQvLCUzW5t9rpFOxzW5WSaT76GoY0Pp4zim7955Yeh9sB0/kfa9aJrm3wAAAP//0Q0Ozp0N",
-	"AAA=",
+	"H4sIAAAAAAAC/+xZ3W7bNhR+FYLbxQaosdKmA+a7LO1at102dAl6EQQBIx1bbCRSIY+SeIGBPcSecE8y",
+	"8Ee2ZVOy3djOze4siTw85/vOL/1IE1mUUoBATfuPVCcZFMz+PC75RxibX6WSJSjkYN8nOQeBVzw1D0Op",
+	"Coa0T6uKpzSiOC6B9qlGxcWITiKaKGAI6ZVZNLc8ZQgvkBcQ2gMPJVegN9qTM41Xld7wJMEKMKuXPii4",
+	"kzcbCbObbiuuIKX9izmUGhhcTvfJ66+QoDnrxH3eEt5utYZEAQZN2xcjLdh24dTQfSVub5WSahmvArRm",
+	"ozWOrhcGZd+BwPdco1QhSr4BwhSQ8VwHKQFz2pV7Hfi8JvU53EFuVn6vYEj79LveLLZ7PrB71rBPduUi",
+	"HlaqE9JQaTURM5n9RwqiKow4sPRE9J4pQSPKxVDO7Z6p/R5YjtkyyBoZVno1jX5dSLEBQtHK3vFG5OlE",
+	"8RK5FE9haL2QsHvt0mhO15B9p3DfljWeErEFe/gEYmRIefn6dWBhpUEtJiQu8KejmVQuEEagloyrt7aY",
+	"Y11p2Zr1g6fgotb9cAcxEgiPFkvCvrfKkdoo6DRrQUcro0Wrcw2BlAkF43mDTfcmWs8VtqH0VE7kzw4Z",
+	"cCZvQHyG2wo0br1QrvCckWJzblYnOS8lUZCCQM5yHchxC6bOSYo66l8HALqUQsMyAixJQOsrNKvCseKz",
+	"AhdrxW5Erai2yrRgV+P0xtbGwSG7wm75DYl66smrUnS7yfMevUaiXnLc7qQ9iaiGpFIcx3+adOMsvQam",
+	"QB1Xrg66p19rVT98OaOR68yNJPd1pnqGWNKJEWxLrNGaY26+fGLX5PiPAY3oHShtUw49PIgPYmOmLEGw",
+	"ktM+fXUQH7yiES0ZZlabHiv5ixsY24eRiw7DCzNpa5AayVyjqzyaGkycQ9r1L+PYcicF+lTOyjLnid3c",
+	"+6pd4nOp1vziCIVelZF9lZtMjWZKsbGzupFS6e8fzaqj+HAjJTqrge1jAkedC1ZhJhX/C9IGsbR/0aT0",
+	"4nJyGVFdFQUz7aSFzzBDDMhkKBXBDIiRZpJIYpyHGL8yppRSBwhwM4OHxXklaPxFpuOt2T1rLiZNx0dV",
+	"wWSJ9e0B3pyHAsD7BeTfv/8hjZxJuCY6k/eCSJGPiRQJOG842oM3aFBESCRDWQnvD1PCncaEEQH3NfGW",
+	"d+Z5nkSzqOs9OqMG6cS1DDkgLLvAZzuiTl2gZIoVgKC0dT+T4W1E171kn9ZS6SKZ0ZztK+qm8eMF4o+W",
+	"+hp6KsmJB/t5gnFPnJ826V43/B1zhInaFRz/SfbCtpUW166wP8lcm7yzuHfi9xz2jZG7PerbIusk58nN",
+	"e1lpIBZF8gOCRgIiLSUX+KPDeD2A/4d3EV7hQHUgZtOJPdgcvAP0M/0TW4Muc/wJLR1Awwa3lCQZJDfO",
+	"gGnP0drcDOyKcFa9rUCNZ2k15wVHOp9DUxiyKkfafxnbCYoXZlg4jGM7EvmnwKR8uY9Wys6lazRStkeR",
+	"Q+KENhG131ie1x+7uxR74s6Cydmz31ianblZDHG3r/bA3iPvLvFv7HuP3+oCz5+htO+/yk5xdejUuJLr",
+	"MRm8sZN6S1J6PhzjnXtePfY8Ix3vABe5MJ4+vYzoShFn/s5gFzmicWm0VqKIt322v6/p4C3ePW+/ca25",
+	"GBGpCBd3LOcpGXLIU723Hn3gj527LYuIuxlKI6OX/9dt2hLPnOvtQ5IxMQI/782L8HPUhy9nxN1AEedy",
+	"1vvMdLWy3bO3TzsrUOduwNtrgZqd2VKgDOM/72coNknVkGtvxwjLFbB0TJDVHLVMyX4unkz+CwAA///k",
+	"Pi+Cox4AAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
