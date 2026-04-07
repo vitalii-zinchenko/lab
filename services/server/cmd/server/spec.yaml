@@ -1,0 +1,56 @@
+openapi: "3.0.3"
+info:
+  title: Lab API
+  version: "1.0.0"
+
+paths:
+  /health:
+    get:
+      operationId: GetHealth
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+
+  /items:
+    $ref: "../../internal/items/spec_paths.yaml#/paths/~1items"
+
+  /items/{id}:
+    $ref: "../../internal/items/spec_paths.yaml#/paths/~1items~1{id}"
+
+  /events:
+    $ref: "../../internal/events/spec_paths.yaml#/paths/~1events"
+
+  /ch-events:
+    $ref: "../../internal/events/spec_paths.yaml#/paths/~1ch-events"
+
+  /users:
+    $ref: "../../internal/auth/spec_paths.yaml#/paths/~1users"
+
+  /token:
+    $ref: "../../internal/auth/spec_paths.yaml#/paths/~1token"
+
+  /api-keys:
+    $ref: "../../internal/auth/spec_paths.yaml#/paths/~1api-keys"
+
+  /api-keys/{clientId}:
+    $ref: "../../internal/auth/spec_paths.yaml#/paths/~1api-keys~1{clientId}"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Health:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string

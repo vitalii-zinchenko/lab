@@ -1,0 +1,34 @@
+components:
+  schemas:
+    EventLevel:
+      type: string
+      enum: [error, warn, info]
+
+    EventHistory:
+      type: object
+      required: [id, level, event_type, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        level:
+          $ref: "#/components/schemas/EventLevel"
+        event_type:
+          type: string
+        details:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    NewEvent:
+      type: object
+      required: [level, event_type]
+      properties:
+        level:
+          $ref: "#/components/schemas/EventLevel"
+        event_type:
+          type: string
+          minLength: 1
+        details:
+          type: string

@@ -1,5 +1,5 @@
-package: api
-output: api/api.gen.go
+package: shared
+output: internal/shared/api.gen.go
 generate:
   gin-server: true
   strict-server: true

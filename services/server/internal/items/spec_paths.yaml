@@ -1,0 +1,84 @@
+paths:
+  /items:
+    get:
+      operationId: ListItems
+      summary: List all items
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: List of items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "./spec_schemas.yaml#/components/schemas/Item"
+
+    post:
+      operationId: CreateItem
+      summary: Create an item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./spec_schemas.yaml#/components/schemas/NewItem"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "./spec_schemas.yaml#/components/schemas/Item"
+
+  /items/{id}:
+    get:
+      operationId: GetItem
+      summary: Get an item by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./spec_schemas.yaml#/components/schemas/Item"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "../shared/spec_schemas.yaml#/components/schemas/Error"
+
+    delete:
+      operationId: DeleteItem
+      summary: Delete an item by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "../shared/spec_schemas.yaml#/components/schemas/Error"

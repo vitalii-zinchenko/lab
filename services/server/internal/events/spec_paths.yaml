@@ -1,0 +1,36 @@
+paths:
+  /events:
+    post:
+      operationId: CreateEvent
+      summary: Create an event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./spec_schemas.yaml#/components/schemas/NewEvent"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "./spec_schemas.yaml#/components/schemas/EventHistory"
+
+  /ch-events:
+    post:
+      operationId: CreateChEvent
+      summary: Create a ClickHouse event (test endpoint)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./spec_schemas.yaml#/components/schemas/NewEvent"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "./spec_schemas.yaml#/components/schemas/EventHistory"

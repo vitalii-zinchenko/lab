@@ -3,22 +3,36 @@ package main
 import (
 	"gorm.io/gen"
 
-	"github.com/vitaliizinchenko/lab/model"
+	authmodels "github.com/vitaliizinchenko/lab/internal/auth/models"
+	eventmodels "github.com/vitaliizinchenko/lab/internal/events/models"
+	itemmodels "github.com/vitaliizinchenko/lab/internal/items/models"
 )
 
 func main() {
+	// Items
 	g := gen.NewGenerator(gen.Config{
-		OutPath:      "./repository/query",
-		ModelPkgPath: "./model",
+		OutPath:      "./internal/items/repos/query",
+		ModelPkgPath: "./internal/items/models",
 		Mode:         gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
 	})
+	g.ApplyBasic(itemmodels.Item{})
+	g.Execute()
 
-	g.ApplyBasic(
-		model.Item{},
-		model.EventHistory{},
-		model.User{},
-		model.ApiKey{},
-	)
+	// Events
+	g = gen.NewGenerator(gen.Config{
+		OutPath:      "./internal/events/repos/query",
+		ModelPkgPath: "./internal/events/models",
+		Mode:         gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
+	})
+	g.ApplyBasic(eventmodels.EventHistory{})
+	g.Execute()
 
+	// Auth
+	g = gen.NewGenerator(gen.Config{
+		OutPath:      "./internal/auth/repos/query",
+		ModelPkgPath: "./internal/auth/models",
+		Mode:         gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
+	})
+	g.ApplyBasic(authmodels.User{}, authmodels.ApiKey{})
 	g.Execute()
 }

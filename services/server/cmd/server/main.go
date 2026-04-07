@@ -16,9 +16,13 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"github.com/vitaliizinchenko/lab/api"
-	"github.com/vitaliizinchenko/lab/api/middleware"
-	"github.com/vitaliizinchenko/lab/repository"
+	authhandlers "github.com/vitaliizinchenko/lab/internal/auth/handlers"
+	authrepos "github.com/vitaliizinchenko/lab/internal/auth/repos"
+	eventhandlers "github.com/vitaliizinchenko/lab/internal/events/handlers"
+	eventrepos "github.com/vitaliizinchenko/lab/internal/events/repos"
+	itemhandlers "github.com/vitaliizinchenko/lab/internal/items/handlers"
+	itemrepos "github.com/vitaliizinchenko/lab/internal/items/repos"
+	"github.com/vitaliizinchenko/lab/internal/shared"
 )
 
 func init() {
@@ -28,6 +32,17 @@ func init() {
 	prometheus.MustRegister(collectors.NewGoCollector(
 		collectors.WithGoCollectorRuntimeMetrics(collectors.MetricsAll),
 	))
+}
+
+// appHandler composes all domain sub-handlers to satisfy shared.StrictServerInterface.
+type appHandler struct {
+	*HealthHandler
+	*itemhandlers.ItemsHandler
+	*eventhandlers.EventsHandler
+	*eventhandlers.ChEventsHandler
+	*authhandlers.TokenHandler
+	*authhandlers.ApiKeysHandler
+	*authhandlers.UsersHandler
 }
 
 func main() {
@@ -55,10 +70,10 @@ func main() {
 		log.Fatal("JWT_SECRET environment variable is required")
 	}
 
-	itemRepo := repository.NewItemRepository(db)
-	eventRepo := repository.NewEventHistoryRepository(db)
-	userRepo := repository.NewUserRepository(db)
-	apiKeyRepo := repository.NewApiKeyRepository(db)
+	itemRepo := itemrepos.NewItemRepository(db)
+	eventRepo := eventrepos.NewEventHistoryRepository(db)
+	userRepo := authrepos.NewUserRepository(db)
+	apiKeyRepo := authrepos.NewApiKeyRepository(db)
 
 	// --- ClickHouse ---
 	chURL := os.Getenv("CLICKHOUSE_URL")
@@ -72,10 +87,10 @@ func main() {
 	}
 	defer chDB.Close()
 
-	chEventRepo := repository.NewChEventRepository(chDB)
+	chEventRepo := eventrepos.NewChEventRepository(chDB)
 
 	// --- OpenAPI / Swagger ---
-	swagger, err := api.GetSwagger()
+	swagger, err := shared.GetSwagger()
 	if err != nil {
 		log.Fatalf("failed to load swagger spec: %v", err)
 	}
@@ -97,11 +112,19 @@ func main() {
 
 	// Validate all incoming requests against the OpenAPI spec
 	router.Use(ginmiddleware.OapiRequestValidator(swagger))
-	router.Use(middleware.Auth(jwtSecret))
+	router.Use(authhandlers.Auth(jwtSecret))
 
-	h := api.New(itemRepo, eventRepo, chEventRepo, userRepo, apiKeyRepo, jwtSecret)
-	strictHandler := api.NewStrictHandler(h, nil)
-	api.RegisterHandlers(router, strictHandler)
+	h := &appHandler{
+		HealthHandler:   &HealthHandler{},
+		ItemsHandler:    itemhandlers.NewItemsHandler(itemRepo),
+		EventsHandler:   eventhandlers.NewEventsHandler(eventRepo),
+		ChEventsHandler: eventhandlers.NewChEventsHandler(chEventRepo),
+		TokenHandler:    authhandlers.NewTokenHandler(apiKeyRepo, jwtSecret),
+		ApiKeysHandler:  authhandlers.NewApiKeysHandler(apiKeyRepo),
+		UsersHandler:    authhandlers.NewUsersHandler(userRepo),
+	}
+	strictHandler := shared.NewStrictHandler(h, nil)
+	shared.RegisterHandlers(router, strictHandler)
 
 	srv := &http.Server{
 		Addr:    ":8080",
