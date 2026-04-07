@@ -1,4 +1,4 @@
-.PHONY: infra-up infra-down db-migrate-up server-up server-down perf-install perf-smoke perf-load perf-stress dashboards dashboards-renderer deploy-dashboards tilt-setup app
+.PHONY: infra-up infra-down db-migrate-up server-up server-down perf-install perf-smoke perf-load perf-stress dashboards dashboards-renderer deploy-dashboards tilt-setup app test
 
 POSTGRES_USER             ?= postgres
 POSTGRES_PASSWORD         ?= postgres
@@ -94,3 +94,6 @@ perf-load:
 
 perf-stress:
 	cd perf/k6 && npx webpack && k6 run dist/stress.js -e BASE_URL=$(BASE_URL)
+
+test:
+	cd services/server && go test -v -timeout 120s ./internal/...

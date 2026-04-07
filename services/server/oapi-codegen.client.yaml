@@ -1,0 +1,5 @@
+package: apiclient
+output: internal/shared/apiclient/client.gen.go
+generate:
+  client: true
+  models: true
