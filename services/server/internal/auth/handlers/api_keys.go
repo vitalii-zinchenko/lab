@@ -58,7 +58,7 @@ func (h *ApiKeysHandler) CreateApiKey(ctx context.Context, req shared.CreateApiK
 
 	created, err := h.apiKeyRepo.Create(ctx, key)
 	if err != nil {
-		if isForeignKeyViolation(err) {
+		if shared.IsForeignKeyViolation(err) {
 			return shared.CreateApiKey404JSONResponse{Message: "user not found"}, nil
 		}
 		return nil, err
@@ -134,16 +134,4 @@ func generateSecret() (string, error) {
 // bcryptCompare wraps bcrypt.CompareHashAndPassword for use across handlers.
 func bcryptCompare(hash, secret string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(secret))
-}
-
-// isForeignKeyViolation returns true for PostgreSQL error code 23503.
-func isForeignKeyViolation(err error) bool {
-	type pgErrorCode interface {
-		SQLState() string
-	}
-	var pgErr pgErrorCode
-	if errors.As(err, &pgErr) {
-		return pgErr.SQLState() == "23503"
-	}
-	return false
 }
