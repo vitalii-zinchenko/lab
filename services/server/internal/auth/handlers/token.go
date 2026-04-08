@@ -71,10 +71,9 @@ func (h *TokenHandler) CreateToken(ctx context.Context, req shared.CreateTokenRe
 		return nil, fmt.Errorf("signing token: %w", err)
 	}
 
-	// Fire-and-forget last_used_at update — don't fail the request if this errors.
-	go func() {
-		_ = h.apiKeyRepo.UpdateLastUsedAt(context.Background(), key.ID, now)
-	}()
+	if err := h.apiKeyRepo.UpdateLastUsedAt(ctx, key.ID, now); err != nil {
+		return nil, fmt.Errorf("updating last_used_at: %w", err)
+	}
 
 	return shared.CreateToken200JSONResponse{
 		AccessToken: signed,
