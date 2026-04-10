@@ -2,13 +2,14 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"net/http"
 	"strconv"
 	"strings"
 
-	"github.com/gin-gonic/gin"
+	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/golang-jwt/jwt/v5"
+	ginmiddleware "github.com/oapi-codegen/gin-middleware"
 )
 
 // contextKey is an unexported type for context keys in this package.
@@ -24,26 +25,23 @@ func GetUserID(ctx context.Context) (int64, bool) {
 	return id, ok
 }
 
-// Auth returns a Gin middleware that validates JWT Bearer tokens.
+// NewAuthenticationFunc returns an openapi3filter.AuthenticationFunc that validates
+// JWT Bearer tokens for routes marked with security requirements in the OpenAPI spec.
 //
-// Behaviour:
-//   - No Authorization header → request passes through unauthenticated.
-//   - Authorization header present but invalid/expired → 401 Unauthorized.
-//   - Valid token → user_id is stored in both the Gin context and the request context.
-//
-// Protected handlers should call GetUserID and return 401 if the id is absent.
-func Auth(jwtSecret []byte) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
+// On success, the authenticated user's ID is stored in both the Gin context and
+// the request context so downstream handlers can retrieve it via GetUserID.
+func NewAuthenticationFunc(jwtSecret []byte) openapi3filter.AuthenticationFunc {
+	return func(ctx context.Context, input *openapi3filter.AuthenticationInput) error {
+		gCtx := ginmiddleware.GetGinContext(ctx)
+
+		authHeader := gCtx.GetHeader("Authorization")
 		if authHeader == "" {
-			c.Next()
-			return
+			return errors.New("missing authorization header")
 		}
 
 		parts := strings.SplitN(authHeader, " ", 2)
 		if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "invalid authorization header format"})
-			return
+			return errors.New("invalid authorization header format")
 		}
 
 		token, err := jwt.Parse(parts[1], func(t *jwt.Token) (interface{}, error) {
@@ -54,25 +52,23 @@ func Auth(jwtSecret []byte) gin.HandlerFunc {
 		}, jwt.WithValidMethods([]string{"HS256"}))
 
 		if err != nil || !token.Valid {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "invalid or expired token"})
-			return
+			return errors.New("invalid or expired token")
 		}
 
 		sub, err := token.Claims.GetSubject()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "invalid token subject"})
-			return
+			return errors.New("invalid token subject")
 		}
 
 		userID, err := strconv.ParseInt(sub, 10, 64)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "invalid token subject"})
-			return
+			return errors.New("invalid token subject")
 		}
 
-		c.Set("user_id", userID)
-		ctx := context.WithValue(c.Request.Context(), UserIDKey, userID)
-		c.Request = c.Request.WithContext(ctx)
-		c.Next()
+		gCtx.Set("user_id", userID)
+		reqCtx := context.WithValue(gCtx.Request.Context(), UserIDKey, userID)
+		gCtx.Request = gCtx.Request.WithContext(reqCtx)
+
+		return nil
 	}
 }

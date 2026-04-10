@@ -41,9 +41,9 @@ type Fixture struct {
 // This is stable regardless of the working directory the tests are run from.
 func repoRoot() string {
 	_, filename, _, _ := runtime.Caller(0)
-	// filename: .../services/server/internal/testinfra/fixture.go
-	// walk 4 levels up to reach lab/
-	return filepath.Join(filepath.Dir(filename), "..", "..", "..", "..")
+	// filename: .../services/server/internal/shared/testinfra/fixture.go
+	// walk 5 levels up to reach lab/
+	return filepath.Join(filepath.Dir(filename), "..", "..", "..", "..", "..")
 }
 
 // NewFixture starts Postgres and ClickHouse containers, runs all migrations, starts the Gin

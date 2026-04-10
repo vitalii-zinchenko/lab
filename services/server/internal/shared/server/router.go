@@ -3,7 +3,10 @@ package server
 import (
 	"database/sql"
 	"fmt"
+	"net/http"
+	"strings"
 
+	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/gin-gonic/gin"
 	ginmiddleware "github.com/oapi-codegen/gin-middleware"
 	"gorm.io/gorm"
@@ -42,9 +45,20 @@ func NewRouter(db *gorm.DB, chDB *sql.DB, jwtSecret []byte, pre ...gin.HandlerFu
 	swagger.Servers = nil
 
 	router := gin.New()
+	router.ContextWithFallback = true
 	router.Use(pre...)
-	router.Use(ginmiddleware.OapiRequestValidator(swagger))
-	router.Use(authhandlers.Auth(jwtSecret))
+	router.Use(ginmiddleware.OapiRequestValidatorWithOptions(swagger, &ginmiddleware.Options{
+		Options: openapi3filter.Options{
+			AuthenticationFunc: authhandlers.NewAuthenticationFunc(jwtSecret),
+		},
+		ErrorHandler: func(c *gin.Context, message string, statusCode int) {
+			if strings.Contains(message, "SecurityRequirementsError") {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+				return
+			}
+			c.AbortWithStatusJSON(statusCode, gin.H{"error": message})
+		},
+	}))
 
 	itemRepo := itemrepos.NewItemRepository(db)
 	eventRepo := eventrepos.NewEventHistoryRepository(db)

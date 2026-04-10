@@ -17,8 +17,7 @@ func TestMain(m *testing.M) {
 
 	f, err := setupFixture(ctx)
 	if err != nil {
-		log.Printf("skipping integration tests: %v", err)
-		os.Exit(0)
+		log.Fatalf("failed to set up integration test fixture: %v", err)
 	}
 	fixture = f
 

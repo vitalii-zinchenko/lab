@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -21,13 +20,13 @@ func UsageTrackingMiddleware(repo repos.UsageRepository) shared.StrictMiddleware
 
 			userID, ok := authhandlers.GetUserID(ctx.Request.Context())
 			if ok {
-				go func() {
-					_ = repo.Record(context.Background(), models.ApiUsage{
-						Timestamp: time.Now().UTC(),
-						UserID:    userID,
-						Operation: operationID,
-					})
-				}()
+				if recordErr := repo.Record(ctx.Request.Context(), models.ApiUsage{
+					Timestamp: time.Now().UTC(),
+					UserID:    userID,
+					Operation: operationID,
+				}); recordErr != nil {
+					return nil, recordErr
+				}
 			}
 
 			return response, err

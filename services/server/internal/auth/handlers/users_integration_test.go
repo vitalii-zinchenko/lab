@@ -3,6 +3,7 @@ package handlers_test
 import (
 	"context"
 	"net/http"
+	"strings"
 	"testing"
 )
 
@@ -61,11 +62,23 @@ func TestCreateUser_DuplicateEmail(t *testing.T) {
 func TestCreateUser_InvalidEmail(t *testing.T) {
 	ctx := context.Background()
 
-	resp := fixture.CreateTestUser(t, ctx, "dave", "not-an-email")
+	// Use a raw request to bypass client-side email validation in openapi_types.Email.
+	// The OpenAPI validator on the server should reject the malformed email with 400.
+	body := strings.NewReader(`{"username":"dave","email":"not-an-email"}`)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, fixture.Server.URL+"/users", body)
+	if err != nil {
+		t.Fatalf("NewRequest: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
 
-	// OpenAPI validator rejects malformed email before hitting the handler.
-	if resp.StatusCode() != http.StatusBadRequest {
-		t.Fatalf("expected 400, got %d: %s", resp.StatusCode(), string(resp.Body))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatalf("Do: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d", resp.StatusCode)
 	}
 }
 
