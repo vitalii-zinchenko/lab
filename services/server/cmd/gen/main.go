@@ -43,6 +43,6 @@ func main() {
 		ModelPkgPath: "./internal/usage/models",
 		Mode:         gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
 	})
-	g.ApplyBasic(usagemodels.ApiUsage{})
+	g.ApplyBasic(usagemodels.Usage{})
 	g.Execute()
 }

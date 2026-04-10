@@ -11,7 +11,7 @@ import (
 	"github.com/vitaliizinchenko/lab/internal/shared/apiclient"
 )
 
-// waitForUsageCount polls api_usage until at least wantAtLeast rows exist for userID,
+// waitForUsageCount polls usage until at least wantAtLeast rows exist for userID,
 // or the timeout expires. Needed because the tracking middleware inserts asynchronously.
 func waitForUsageCount(t *testing.T, db *gorm.DB, userID int64, wantAtLeast int, timeout time.Duration) {
 	t.Helper()
@@ -19,7 +19,7 @@ func waitForUsageCount(t *testing.T, db *gorm.DB, userID int64, wantAtLeast int,
 	for time.Now().Before(deadline) {
 		var count int64
 		db.WithContext(context.Background()).
-			Raw("SELECT COUNT(*) FROM api_usage WHERE user_id = ?", userID).
+			Raw("SELECT COUNT(*) FROM usage WHERE user_id = ?", userID).
 			Scan(&count)
 		if int(count) >= wantAtLeast {
 			return

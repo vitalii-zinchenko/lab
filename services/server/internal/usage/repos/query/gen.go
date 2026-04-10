@@ -16,34 +16,34 @@ import (
 )
 
 var (
-	Q        = new(Query)
-	ApiUsage *apiUsage
+	Q     = new(Query)
+	Usage *usage
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
-	ApiUsage = &Q.ApiUsage
+	Usage = &Q.Usage
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:       db,
-		ApiUsage: newApiUsage(db, opts...),
+		db:    db,
+		Usage: newUsage(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	ApiUsage apiUsage
+	Usage usage
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:       db,
-		ApiUsage: q.ApiUsage.clone(db),
+		db:    db,
+		Usage: q.Usage.clone(db),
 	}
 }
 
@@ -57,18 +57,18 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:       db,
-		ApiUsage: q.ApiUsage.replaceDB(db),
+		db:    db,
+		Usage: q.Usage.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	ApiUsage IApiUsageDo
+	Usage IUsageDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		ApiUsage: q.ApiUsage.WithContext(ctx),
+		Usage: q.Usage.WithContext(ctx),
 	}
 }
 
