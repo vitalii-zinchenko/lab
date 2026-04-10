@@ -15,6 +15,8 @@ import (
 	itemhandlers "github.com/vitaliizinchenko/lab/internal/items/handlers"
 	itemrepos "github.com/vitaliizinchenko/lab/internal/items/repos"
 	"github.com/vitaliizinchenko/lab/internal/shared"
+	usagehandlers "github.com/vitaliizinchenko/lab/internal/usage/handlers"
+	usagerepos "github.com/vitaliizinchenko/lab/internal/usage/repos"
 )
 
 // appHandler composes all domain sub-handlers to satisfy shared.StrictServerInterface.
@@ -26,6 +28,7 @@ type appHandler struct {
 	*authhandlers.TokenHandler
 	*authhandlers.ApiKeysHandler
 	*authhandlers.UsersHandler
+	*usagehandlers.UsageHandler
 }
 
 // NewRouter builds a configured Gin engine with OpenAPI validation, auth middleware, and all
@@ -48,6 +51,7 @@ func NewRouter(db *gorm.DB, chDB *sql.DB, jwtSecret []byte, pre ...gin.HandlerFu
 	userRepo := authrepos.NewUserRepository(db)
 	apiKeyRepo := authrepos.NewApiKeyRepository(db)
 	chEventRepo := eventrepos.NewChEventRepository(chDB)
+	usageRepo := usagerepos.NewPostgresUsageRepository(db)
 
 	h := &appHandler{
 		healthHandler:   &healthHandler{},
@@ -57,9 +61,12 @@ func NewRouter(db *gorm.DB, chDB *sql.DB, jwtSecret []byte, pre ...gin.HandlerFu
 		TokenHandler:    authhandlers.NewTokenHandler(apiKeyRepo, jwtSecret),
 		ApiKeysHandler:  authhandlers.NewApiKeysHandler(apiKeyRepo),
 		UsersHandler:    authhandlers.NewUsersHandler(userRepo),
+		UsageHandler:    usagehandlers.NewUsageHandler(usageRepo),
 	}
 
-	strictHandler := shared.NewStrictHandler(h, nil)
+	strictHandler := shared.NewStrictHandler(h, []shared.StrictMiddlewareFunc{
+		usagehandlers.UsageTrackingMiddleware(usageRepo),
+	})
 	shared.RegisterHandlers(router, strictHandler)
 
 	return router

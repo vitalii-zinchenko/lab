@@ -6,6 +6,7 @@ import (
 	authmodels "github.com/vitaliizinchenko/lab/internal/auth/models"
 	eventmodels "github.com/vitaliizinchenko/lab/internal/events/models"
 	itemmodels "github.com/vitaliizinchenko/lab/internal/items/models"
+	usagemodels "github.com/vitaliizinchenko/lab/internal/usage/models"
 )
 
 func main() {
@@ -34,5 +35,14 @@ func main() {
 		Mode:         gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
 	})
 	g.ApplyBasic(authmodels.User{}, authmodels.ApiKey{})
+	g.Execute()
+
+	// Usage
+	g = gen.NewGenerator(gen.Config{
+		OutPath:      "./internal/usage/repos/query",
+		ModelPkgPath: "./internal/usage/models",
+		Mode:         gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
+	})
+	g.ApplyBasic(usagemodels.ApiUsage{})
 	g.Execute()
 }

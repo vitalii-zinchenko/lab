@@ -20,7 +20,7 @@ func TestCreateToken_Success(t *testing.T) {
 	user := fixture.CreateTestUser(t, ctx, "tokenuser", "tokenuser@example.com")
 	key := fixture.CreateTestApiKey(t, ctx, user.JSON201.Id)
 
-	resp, err := fixture.Client().CreateTokenWithResponse(ctx, apiclient.InternalAuthSpecSchemasTokenRequest{
+	resp, err := fixture.Client().CreateTokenWithResponse(ctx, apiclient.TokenRequest{
 		ClientId:     key.JSON201.ClientId,
 		ClientSecret: key.JSON201.ClientSecret,
 		GrantType:    apiclient.ClientCredentials,
@@ -75,7 +75,7 @@ func TestCreateToken_JWTClaimsValid(t *testing.T) {
 func TestCreateToken_WrongClientID(t *testing.T) {
 	ctx := context.Background()
 
-	resp, err := fixture.Client().CreateTokenWithResponse(ctx, apiclient.InternalAuthSpecSchemasTokenRequest{
+	resp, err := fixture.Client().CreateTokenWithResponse(ctx, apiclient.TokenRequest{
 		ClientId:     openapi_types.UUID(uuid.MustParse("00000000-0000-0000-0000-000000000000")),
 		ClientSecret: "somesecret",
 		GrantType:    apiclient.ClientCredentials,
@@ -96,7 +96,7 @@ func TestCreateToken_WrongSecret(t *testing.T) {
 	user := fixture.CreateTestUser(t, ctx, "wrongsecret", "wrongsecret@example.com")
 	key := fixture.CreateTestApiKey(t, ctx, user.JSON201.Id)
 
-	resp, err := fixture.Client().CreateTokenWithResponse(ctx, apiclient.InternalAuthSpecSchemasTokenRequest{
+	resp, err := fixture.Client().CreateTokenWithResponse(ctx, apiclient.TokenRequest{
 		ClientId:     key.JSON201.ClientId,
 		ClientSecret: "this-is-the-wrong-secret",
 		GrantType:    apiclient.ClientCredentials,
@@ -123,7 +123,7 @@ func TestCreateToken_RevokedKey(t *testing.T) {
 		t.Fatalf("RevokeApiKey: %v", err)
 	}
 
-	resp, err := fixture.Client().CreateTokenWithResponse(ctx, apiclient.InternalAuthSpecSchemasTokenRequest{
+	resp, err := fixture.Client().CreateTokenWithResponse(ctx, apiclient.TokenRequest{
 		ClientId:     key.JSON201.ClientId,
 		ClientSecret: key.JSON201.ClientSecret,
 		GrantType:    apiclient.ClientCredentials,
@@ -143,7 +143,7 @@ func TestCreateToken_ExpiredKey(t *testing.T) {
 	user := fixture.CreateTestUser(t, ctx, "expireduser", "expireduser@example.com")
 	past := time.Now().UTC().Add(-time.Hour)
 
-	keyResp, err := fixture.Client().CreateApiKeyWithResponse(ctx, apiclient.InternalAuthSpecSchemasNewApiKey{
+	keyResp, err := fixture.Client().CreateApiKeyWithResponse(ctx, apiclient.NewApiKey{
 		UserId:    user.JSON201.Id,
 		ExpiresAt: &past,
 	})
@@ -151,7 +151,7 @@ func TestCreateToken_ExpiredKey(t *testing.T) {
 		t.Fatalf("CreateApiKey: status=%d err=%v", keyResp.StatusCode(), err)
 	}
 
-	resp, err := fixture.Client().CreateTokenWithResponse(ctx, apiclient.InternalAuthSpecSchemasTokenRequest{
+	resp, err := fixture.Client().CreateTokenWithResponse(ctx, apiclient.TokenRequest{
 		ClientId:     keyResp.JSON201.ClientId,
 		ClientSecret: keyResp.JSON201.ClientSecret,
 		GrantType:    apiclient.ClientCredentials,

@@ -1,0 +1,33 @@
+paths:
+  /usage:
+    get:
+      operationId: GetUsage
+      summary: Get API usage statistics for the authenticated user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: Daily call counts grouped by day
+          content:
+            application/json:
+              schema:
+                $ref: "./spec_schemas.yaml#/components/schemas/UsageStats"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "../shared/spec_schemas.yaml#/components/schemas/Error"

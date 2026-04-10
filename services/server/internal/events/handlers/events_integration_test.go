@@ -14,7 +14,7 @@ func TestCreateEvent_Success(t *testing.T) {
 	ctx := context.Background()
 	t.Cleanup(func() { fixture.TruncateTables(t) })
 
-	resp, err := fixture.Client().CreateEventWithResponse(ctx, apiclient.InternalEventsSpecSchemasNewEvent{
+	resp, err := fixture.Client().CreateEventWithResponse(ctx, apiclient.NewEvent{
 		Level:     apiclient.Info,
 		EventType: "user.created",
 	})
@@ -34,7 +34,7 @@ func TestCreateEvent_Success(t *testing.T) {
 	if string(resp.JSON201.Level) != "info" {
 		t.Errorf("level: want info, got %s", resp.JSON201.Level)
 	}
-	if resp.JSON201.Id == (apiclient.InternalEventsSpecSchemasEventHistory{}).Id {
+	if resp.JSON201.Id == (apiclient.EventHistory{}).Id {
 		t.Error("expected non-zero id")
 	}
 	if resp.JSON201.CreatedAt.IsZero() {
@@ -50,7 +50,7 @@ func TestCreateEvent_WithDetails(t *testing.T) {
 	t.Cleanup(func() { fixture.TruncateTables(t) })
 
 	details := `{"user_id": 42}`
-	resp, err := fixture.Client().CreateEventWithResponse(ctx, apiclient.InternalEventsSpecSchemasNewEvent{
+	resp, err := fixture.Client().CreateEventWithResponse(ctx, apiclient.NewEvent{
 		Level:     apiclient.Error,
 		EventType: "payment.failed",
 		Details:   &details,
@@ -70,13 +70,13 @@ func TestCreateEvent_AllLevels(t *testing.T) {
 	ctx := context.Background()
 	t.Cleanup(func() { fixture.TruncateTables(t) })
 
-	for _, level := range []apiclient.InternalEventsSpecSchemasEventLevel{
+	for _, level := range []apiclient.EventLevel{
 		apiclient.Info,
 		apiclient.Warn,
 		apiclient.Error,
 	} {
 		t.Run(string(level), func(t *testing.T) {
-			resp, err := fixture.Client().CreateEventWithResponse(ctx, apiclient.InternalEventsSpecSchemasNewEvent{
+			resp, err := fixture.Client().CreateEventWithResponse(ctx, apiclient.NewEvent{
 				Level:     level,
 				EventType: "test.event",
 			})
@@ -126,7 +126,7 @@ func TestCreateEvent_MissingEventType(t *testing.T) {
 func TestCreateChEvent_Success(t *testing.T) {
 	ctx := context.Background()
 
-	resp, err := fixture.Client().CreateChEventWithResponse(ctx, apiclient.InternalEventsSpecSchemasNewEvent{
+	resp, err := fixture.Client().CreateChEventWithResponse(ctx, apiclient.NewEvent{
 		Level:     apiclient.Warn,
 		EventType: "cache.miss",
 	})
@@ -152,7 +152,7 @@ func TestCreateChEvent_WithDetails(t *testing.T) {
 	ctx := context.Background()
 
 	details := "key=homepage ttl=300"
-	resp, err := fixture.Client().CreateChEventWithResponse(ctx, apiclient.InternalEventsSpecSchemasNewEvent{
+	resp, err := fixture.Client().CreateChEventWithResponse(ctx, apiclient.NewEvent{
 		Level:     apiclient.Info,
 		EventType: "cache.hit",
 		Details:   &details,

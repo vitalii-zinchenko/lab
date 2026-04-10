@@ -16,7 +16,7 @@ func TestCreateItem_Success(t *testing.T) {
 	ctx := context.Background()
 	t.Cleanup(func() { fixture.TruncateTables(t) })
 
-	resp, err := fixture.Client().CreateItemWithResponse(ctx, apiclient.InternalItemsSpecSchemasNewItem{
+	resp, err := fixture.Client().CreateItemWithResponse(ctx, apiclient.NewItem{
 		Name: "widget",
 	})
 	if err != nil {
@@ -48,7 +48,7 @@ func TestCreateItem_WithDescription(t *testing.T) {
 	t.Cleanup(func() { fixture.TruncateTables(t) })
 
 	desc := "a very fine widget"
-	resp, err := fixture.Client().CreateItemWithResponse(ctx, apiclient.InternalItemsSpecSchemasNewItem{
+	resp, err := fixture.Client().CreateItemWithResponse(ctx, apiclient.NewItem{
 		Name:        "widget with desc",
 		Description: &desc,
 	})
@@ -98,7 +98,7 @@ func TestListItems_WithItems(t *testing.T) {
 	t.Cleanup(func() { fixture.TruncateTables(t) })
 
 	for _, name := range []string{"alpha", "beta", "gamma"} {
-		_, err := fixture.Client().CreateItemWithResponse(ctx, apiclient.InternalItemsSpecSchemasNewItem{Name: name})
+		_, err := fixture.Client().CreateItemWithResponse(ctx, apiclient.NewItem{Name: name})
 		if err != nil {
 			t.Fatalf("CreateItem %s: %v", name, err)
 		}
@@ -121,7 +121,7 @@ func TestListItems_Limit(t *testing.T) {
 	t.Cleanup(func() { fixture.TruncateTables(t) })
 
 	for _, name := range []string{"one", "two", "three"} {
-		_, err := fixture.Client().CreateItemWithResponse(ctx, apiclient.InternalItemsSpecSchemasNewItem{Name: name})
+		_, err := fixture.Client().CreateItemWithResponse(ctx, apiclient.NewItem{Name: name})
 		if err != nil {
 			t.Fatalf("CreateItem %s: %v", name, err)
 		}
@@ -144,7 +144,7 @@ func TestGetItem_Success(t *testing.T) {
 	ctx := context.Background()
 	t.Cleanup(func() { fixture.TruncateTables(t) })
 
-	created, err := fixture.Client().CreateItemWithResponse(ctx, apiclient.InternalItemsSpecSchemasNewItem{Name: "findme"})
+	created, err := fixture.Client().CreateItemWithResponse(ctx, apiclient.NewItem{Name: "findme"})
 	if err != nil || created.StatusCode() != http.StatusCreated {
 		t.Fatalf("CreateItem: status=%d err=%v", created.StatusCode(), err)
 	}
@@ -181,7 +181,7 @@ func TestDeleteItem_Success(t *testing.T) {
 	ctx := context.Background()
 	t.Cleanup(func() { fixture.TruncateTables(t) })
 
-	created, err := fixture.Client().CreateItemWithResponse(ctx, apiclient.InternalItemsSpecSchemasNewItem{Name: "deleteme"})
+	created, err := fixture.Client().CreateItemWithResponse(ctx, apiclient.NewItem{Name: "deleteme"})
 	if err != nil || created.StatusCode() != http.StatusCreated {
 		t.Fatalf("CreateItem: status=%d err=%v", created.StatusCode(), err)
 	}
@@ -221,7 +221,7 @@ func TestDeleteItem_AlreadyDeleted(t *testing.T) {
 	ctx := context.Background()
 	t.Cleanup(func() { fixture.TruncateTables(t) })
 
-	created, err := fixture.Client().CreateItemWithResponse(ctx, apiclient.InternalItemsSpecSchemasNewItem{Name: "delete-twice"})
+	created, err := fixture.Client().CreateItemWithResponse(ctx, apiclient.NewItem{Name: "delete-twice"})
 	if err != nil || created.StatusCode() != http.StatusCreated {
 		t.Fatalf("CreateItem: status=%d err=%v", created.StatusCode(), err)
 	}

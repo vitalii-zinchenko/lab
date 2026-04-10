@@ -22,13 +22,34 @@ const (
 	BearerAuthScopes = "bearerAuth.Scopes"
 )
 
-// Defines values for InternalAuthSpecSchemasTokenRequestGrantType.
+// Defines values for EventLevel.
 const (
-	ClientCredentials InternalAuthSpecSchemasTokenRequestGrantType = "client_credentials"
+	EventLevelError EventLevel = "error"
+	EventLevelInfo  EventLevel = "info"
+	EventLevelWarn  EventLevel = "warn"
 )
 
-// Valid indicates whether the value is a known member of the InternalAuthSpecSchemasTokenRequestGrantType enum.
-func (e InternalAuthSpecSchemasTokenRequestGrantType) Valid() bool {
+// Valid indicates whether the value is a known member of the EventLevel enum.
+func (e EventLevel) Valid() bool {
+	switch e {
+	case EventLevelError:
+		return true
+	case EventLevelInfo:
+		return true
+	case EventLevelWarn:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TokenRequestGrantType.
+const (
+	ClientCredentials TokenRequestGrantType = "client_credentials"
+)
+
+// Valid indicates whether the value is a known member of the TokenRequestGrantType enum.
+func (e TokenRequestGrantType) Valid() bool {
 	switch e {
 	case ClientCredentials:
 		return true
@@ -37,34 +58,8 @@ func (e InternalAuthSpecSchemasTokenRequestGrantType) Valid() bool {
 	}
 }
 
-// Defines values for InternalEventsSpecSchemasEventLevel.
-const (
-	Error InternalEventsSpecSchemasEventLevel = "error"
-	Info  InternalEventsSpecSchemasEventLevel = "info"
-	Warn  InternalEventsSpecSchemasEventLevel = "warn"
-)
-
-// Valid indicates whether the value is a known member of the InternalEventsSpecSchemasEventLevel enum.
-func (e InternalEventsSpecSchemasEventLevel) Valid() bool {
-	switch e {
-	case Error:
-		return true
-	case Info:
-		return true
-	case Warn:
-		return true
-	default:
-		return false
-	}
-}
-
-// Health defines model for Health.
-type Health struct {
-	Status string `json:"status"`
-}
-
-// InternalAuthSpecSchemasApiKey defines model for internal_auth_spec_schemas_ApiKey.
-type InternalAuthSpecSchemasApiKey struct {
+// ApiKey defines model for ApiKey.
+type ApiKey struct {
 	ClientId   openapi_types.UUID `json:"client_id"`
 	CreatedAt  time.Time          `json:"created_at"`
 	ExpiresAt  *time.Time         `json:"expires_at,omitempty"`
@@ -73,8 +68,8 @@ type InternalAuthSpecSchemasApiKey struct {
 	RevokedAt  *time.Time         `json:"revoked_at,omitempty"`
 }
 
-// InternalAuthSpecSchemasCreatedApiKey defines model for internal_auth_spec_schemas_CreatedApiKey.
-type InternalAuthSpecSchemasCreatedApiKey struct {
+// CreatedApiKey defines model for CreatedApiKey.
+type CreatedApiKey struct {
 	ClientId     openapi_types.UUID `json:"client_id"`
 	ClientSecret string             `json:"client_secret"`
 	CreatedAt    time.Time          `json:"created_at"`
@@ -82,80 +77,96 @@ type InternalAuthSpecSchemasCreatedApiKey struct {
 	Name         *string            `json:"name,omitempty"`
 }
 
-// InternalAuthSpecSchemasNewApiKey defines model for internal_auth_spec_schemas_NewApiKey.
-type InternalAuthSpecSchemasNewApiKey struct {
-	ExpiresAt *time.Time `json:"expires_at,omitempty"`
-	Name      *string    `json:"name,omitempty"`
-	UserId    int64      `json:"user_id"`
+// DailyUsage defines model for DailyUsage.
+type DailyUsage struct {
+	Count int                `json:"count"`
+	Date  openapi_types.Date `json:"date"`
 }
 
-// InternalAuthSpecSchemasNewUser defines model for internal_auth_spec_schemas_NewUser.
-type InternalAuthSpecSchemasNewUser struct {
-	Email    openapi_types.Email `json:"email"`
-	Username string              `json:"username"`
+// Error defines model for Error.
+type Error struct {
+	Message string `json:"message"`
 }
 
-// InternalAuthSpecSchemasTokenRequest defines model for internal_auth_spec_schemas_TokenRequest.
-type InternalAuthSpecSchemasTokenRequest struct {
-	ClientId     openapi_types.UUID                           `json:"client_id"`
-	ClientSecret string                                       `json:"client_secret"`
-	GrantType    InternalAuthSpecSchemasTokenRequestGrantType `json:"grant_type"`
+// EventHistory defines model for EventHistory.
+type EventHistory struct {
+	CreatedAt time.Time          `json:"created_at"`
+	Details   *string            `json:"details,omitempty"`
+	EventType string             `json:"event_type"`
+	Id        openapi_types.UUID `json:"id"`
+	Level     EventLevel         `json:"level"`
 }
 
-// InternalAuthSpecSchemasTokenRequestGrantType defines model for InternalAuthSpecSchemasTokenRequest.GrantType.
-type InternalAuthSpecSchemasTokenRequestGrantType string
+// EventLevel defines model for EventLevel.
+type EventLevel string
 
-// InternalAuthSpecSchemasTokenResponse defines model for internal_auth_spec_schemas_TokenResponse.
-type InternalAuthSpecSchemasTokenResponse struct {
-	AccessToken string `json:"access_token"`
-	ExpiresIn   int64  `json:"expires_in"`
-	TokenType   string `json:"token_type"`
+// Health defines model for Health.
+type Health struct {
+	Status string `json:"status"`
 }
 
-// InternalAuthSpecSchemasUser defines model for internal_auth_spec_schemas_User.
-type InternalAuthSpecSchemasUser struct {
-	CreatedAt time.Time `json:"createdAt"`
-	Email     string    `json:"email"`
-	Id        int64     `json:"id"`
-	Username  string    `json:"username"`
-}
-
-// InternalEventsSpecSchemasEventHistory defines model for internal_events_spec_schemas_EventHistory.
-type InternalEventsSpecSchemasEventHistory struct {
-	CreatedAt time.Time                           `json:"created_at"`
-	Details   *string                             `json:"details,omitempty"`
-	EventType string                              `json:"event_type"`
-	Id        openapi_types.UUID                  `json:"id"`
-	Level     InternalEventsSpecSchemasEventLevel `json:"level"`
-}
-
-// InternalEventsSpecSchemasEventLevel defines model for internal_events_spec_schemas_EventLevel.
-type InternalEventsSpecSchemasEventLevel string
-
-// InternalEventsSpecSchemasNewEvent defines model for internal_events_spec_schemas_NewEvent.
-type InternalEventsSpecSchemasNewEvent struct {
-	Details   *string                             `json:"details,omitempty"`
-	EventType string                              `json:"event_type"`
-	Level     InternalEventsSpecSchemasEventLevel `json:"level"`
-}
-
-// InternalItemsSpecSchemasItem defines model for internal_items_spec_schemas_Item.
-type InternalItemsSpecSchemasItem struct {
+// Item defines model for Item.
+type Item struct {
 	CreatedAt   time.Time          `json:"createdAt"`
 	Description *string            `json:"description,omitempty"`
 	Id          openapi_types.UUID `json:"id"`
 	Name        string             `json:"name"`
 }
 
-// InternalItemsSpecSchemasNewItem defines model for internal_items_spec_schemas_NewItem.
-type InternalItemsSpecSchemasNewItem struct {
+// NewApiKey defines model for NewApiKey.
+type NewApiKey struct {
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
+	Name      *string    `json:"name,omitempty"`
+	UserId    int64      `json:"user_id"`
+}
+
+// NewEvent defines model for NewEvent.
+type NewEvent struct {
+	Details   *string    `json:"details,omitempty"`
+	EventType string     `json:"event_type"`
+	Level     EventLevel `json:"level"`
+}
+
+// NewItem defines model for NewItem.
+type NewItem struct {
 	Description *string `json:"description,omitempty"`
 	Name        string  `json:"name"`
 }
 
-// InternalSharedSpecSchemasError defines model for internal_shared_spec_schemas_Error.
-type InternalSharedSpecSchemasError struct {
-	Message string `json:"message"`
+// NewUser defines model for NewUser.
+type NewUser struct {
+	Email    openapi_types.Email `json:"email"`
+	Username string              `json:"username"`
+}
+
+// TokenRequest defines model for TokenRequest.
+type TokenRequest struct {
+	ClientId     openapi_types.UUID    `json:"client_id"`
+	ClientSecret string                `json:"client_secret"`
+	GrantType    TokenRequestGrantType `json:"grant_type"`
+}
+
+// TokenRequestGrantType defines model for TokenRequest.GrantType.
+type TokenRequestGrantType string
+
+// TokenResponse defines model for TokenResponse.
+type TokenResponse struct {
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int64  `json:"expires_in"`
+	TokenType   string `json:"token_type"`
+}
+
+// UsageStats defines model for UsageStats.
+type UsageStats struct {
+	Data []DailyUsage `json:"data"`
+}
+
+// User defines model for User.
+type User struct {
+	CreatedAt time.Time `json:"createdAt"`
+	Email     string    `json:"email"`
+	Id        int64     `json:"id"`
+	Username  string    `json:"username"`
 }
 
 // ListItemsParams defines parameters for ListItems.
@@ -163,23 +174,29 @@ type ListItemsParams struct {
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
+// GetUsageParams defines parameters for GetUsage.
+type GetUsageParams struct {
+	From time.Time `form:"from" json:"from"`
+	To   time.Time `form:"to" json:"to"`
+}
+
 // CreateApiKeyJSONRequestBody defines body for CreateApiKey for application/json ContentType.
-type CreateApiKeyJSONRequestBody = InternalAuthSpecSchemasNewApiKey
+type CreateApiKeyJSONRequestBody = NewApiKey
 
 // CreateChEventJSONRequestBody defines body for CreateChEvent for application/json ContentType.
-type CreateChEventJSONRequestBody = InternalEventsSpecSchemasNewEvent
+type CreateChEventJSONRequestBody = NewEvent
 
 // CreateEventJSONRequestBody defines body for CreateEvent for application/json ContentType.
-type CreateEventJSONRequestBody = InternalEventsSpecSchemasNewEvent
+type CreateEventJSONRequestBody = NewEvent
 
 // CreateItemJSONRequestBody defines body for CreateItem for application/json ContentType.
-type CreateItemJSONRequestBody = InternalItemsSpecSchemasNewItem
+type CreateItemJSONRequestBody = NewItem
 
 // CreateTokenJSONRequestBody defines body for CreateToken for application/json ContentType.
-type CreateTokenJSONRequestBody = InternalAuthSpecSchemasTokenRequest
+type CreateTokenJSONRequestBody = TokenRequest
 
 // CreateUserJSONRequestBody defines body for CreateUser for application/json ContentType.
-type CreateUserJSONRequestBody = InternalAuthSpecSchemasNewUser
+type CreateUserJSONRequestBody = NewUser
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -296,6 +313,9 @@ type ClientInterface interface {
 	CreateTokenWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CreateToken(ctx context.Context, body CreateTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetUsage request
+	GetUsage(ctx context.Context, params *GetUsageParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateUserWithBody request with any body
 	CreateUserWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -485,6 +505,18 @@ func (c *Client) CreateTokenWithBody(ctx context.Context, contentType string, bo
 
 func (c *Client) CreateToken(ctx context.Context, body CreateTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateTokenRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetUsage(ctx context.Context, params *GetUsageParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetUsageRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -924,6 +956,63 @@ func NewCreateTokenRequestWithBody(server string, contentType string, body io.Re
 	return req, nil
 }
 
+// NewGetUsageRequest generates requests for GetUsage
+func NewGetUsageRequest(server string, params *GetUsageParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/usage")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "from", params.From, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date-time"}); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "to", params.To, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date-time"}); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewCreateUserRequest calls the generic CreateUser builder with application/json body
 func NewCreateUserRequest(server string, body CreateUserJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -1050,6 +1139,9 @@ type ClientWithResponsesInterface interface {
 
 	CreateTokenWithResponse(ctx context.Context, body CreateTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateTokenResponse, error)
 
+	// GetUsageWithResponse request
+	GetUsageWithResponse(ctx context.Context, params *GetUsageParams, reqEditors ...RequestEditorFn) (*GetUsageResponse, error)
+
 	// CreateUserWithBodyWithResponse request with any body
 	CreateUserWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUserResponse, error)
 
@@ -1059,8 +1151,8 @@ type ClientWithResponsesInterface interface {
 type ListApiKeysResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *[]InternalAuthSpecSchemasApiKey
-	JSON401      *InternalSharedSpecSchemasError
+	JSON200      *[]ApiKey
+	JSON401      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -1082,8 +1174,8 @@ func (r ListApiKeysResponse) StatusCode() int {
 type CreateApiKeyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *InternalAuthSpecSchemasCreatedApiKey
-	JSON404      *InternalSharedSpecSchemasError
+	JSON201      *CreatedApiKey
+	JSON404      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -1105,8 +1197,8 @@ func (r CreateApiKeyResponse) StatusCode() int {
 type RevokeApiKeyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON401      *InternalSharedSpecSchemasError
-	JSON404      *InternalSharedSpecSchemasError
+	JSON401      *Error
+	JSON404      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -1128,7 +1220,7 @@ func (r RevokeApiKeyResponse) StatusCode() int {
 type CreateChEventResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *InternalEventsSpecSchemasEventHistory
+	JSON201      *EventHistory
 }
 
 // Status returns HTTPResponse.Status
@@ -1150,7 +1242,7 @@ func (r CreateChEventResponse) StatusCode() int {
 type CreateEventResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *InternalEventsSpecSchemasEventHistory
+	JSON201      *EventHistory
 }
 
 // Status returns HTTPResponse.Status
@@ -1194,7 +1286,7 @@ func (r GetHealthResponse) StatusCode() int {
 type ListItemsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *[]InternalItemsSpecSchemasItem
+	JSON200      *[]Item
 }
 
 // Status returns HTTPResponse.Status
@@ -1216,7 +1308,7 @@ func (r ListItemsResponse) StatusCode() int {
 type CreateItemResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *InternalItemsSpecSchemasItem
+	JSON201      *Item
 }
 
 // Status returns HTTPResponse.Status
@@ -1238,7 +1330,7 @@ func (r CreateItemResponse) StatusCode() int {
 type DeleteItemResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON404      *InternalSharedSpecSchemasError
+	JSON404      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -1260,8 +1352,8 @@ func (r DeleteItemResponse) StatusCode() int {
 type GetItemResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *InternalItemsSpecSchemasItem
-	JSON404      *InternalSharedSpecSchemasError
+	JSON200      *Item
+	JSON404      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -1283,9 +1375,9 @@ func (r GetItemResponse) StatusCode() int {
 type CreateTokenResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *InternalAuthSpecSchemasTokenResponse
-	JSON400      *InternalSharedSpecSchemasError
-	JSON401      *InternalSharedSpecSchemasError
+	JSON200      *TokenResponse
+	JSON400      *Error
+	JSON401      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -1304,11 +1396,34 @@ func (r CreateTokenResponse) StatusCode() int {
 	return 0
 }
 
+type GetUsageResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *UsageStats
+	JSON401      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetUsageResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetUsageResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *InternalAuthSpecSchemasUser
-	JSON409      *InternalSharedSpecSchemasError
+	JSON201      *User
+	JSON409      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -1466,6 +1581,15 @@ func (c *ClientWithResponses) CreateTokenWithResponse(ctx context.Context, body 
 	return ParseCreateTokenResponse(rsp)
 }
 
+// GetUsageWithResponse request returning *GetUsageResponse
+func (c *ClientWithResponses) GetUsageWithResponse(ctx context.Context, params *GetUsageParams, reqEditors ...RequestEditorFn) (*GetUsageResponse, error) {
+	rsp, err := c.GetUsage(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetUsageResponse(rsp)
+}
+
 // CreateUserWithBodyWithResponse request with arbitrary body returning *CreateUserResponse
 func (c *ClientWithResponses) CreateUserWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUserResponse, error) {
 	rsp, err := c.CreateUserWithBody(ctx, contentType, body, reqEditors...)
@@ -1498,14 +1622,14 @@ func ParseListApiKeysResponse(rsp *http.Response) (*ListApiKeysResponse, error) 
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest []InternalAuthSpecSchemasApiKey
+		var dest []ApiKey
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest InternalSharedSpecSchemasError
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1531,14 +1655,14 @@ func ParseCreateApiKeyResponse(rsp *http.Response) (*CreateApiKeyResponse, error
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest InternalAuthSpecSchemasCreatedApiKey
+		var dest CreatedApiKey
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest InternalSharedSpecSchemasError
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1564,14 +1688,14 @@ func ParseRevokeApiKeyResponse(rsp *http.Response) (*RevokeApiKeyResponse, error
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest InternalSharedSpecSchemasError
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest InternalSharedSpecSchemasError
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1597,7 +1721,7 @@ func ParseCreateChEventResponse(rsp *http.Response) (*CreateChEventResponse, err
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest InternalEventsSpecSchemasEventHistory
+		var dest EventHistory
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1623,7 +1747,7 @@ func ParseCreateEventResponse(rsp *http.Response) (*CreateEventResponse, error) 
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest InternalEventsSpecSchemasEventHistory
+		var dest EventHistory
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1675,7 +1799,7 @@ func ParseListItemsResponse(rsp *http.Response) (*ListItemsResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest []InternalItemsSpecSchemasItem
+		var dest []Item
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1701,7 +1825,7 @@ func ParseCreateItemResponse(rsp *http.Response) (*CreateItemResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest InternalItemsSpecSchemasItem
+		var dest Item
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1727,7 +1851,7 @@ func ParseDeleteItemResponse(rsp *http.Response) (*DeleteItemResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest InternalSharedSpecSchemasError
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1753,14 +1877,14 @@ func ParseGetItemResponse(rsp *http.Response) (*GetItemResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest InternalItemsSpecSchemasItem
+		var dest Item
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest InternalSharedSpecSchemasError
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1786,21 +1910,54 @@ func ParseCreateTokenResponse(rsp *http.Response) (*CreateTokenResponse, error) 
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest InternalAuthSpecSchemasTokenResponse
+		var dest TokenResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest InternalSharedSpecSchemasError
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest InternalSharedSpecSchemasError
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetUsageResponse parses an HTTP response from a GetUsageWithResponse call
+func ParseGetUsageResponse(rsp *http.Response) (*GetUsageResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetUsageResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest UsageStats
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1826,14 +1983,14 @@ func ParseCreateUserResponse(rsp *http.Response) (*CreateUserResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest InternalAuthSpecSchemasUser
+		var dest User
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest InternalSharedSpecSchemasError
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

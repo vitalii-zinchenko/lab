@@ -154,7 +154,7 @@ func (f *Fixture) AuthClient(token string) *apiclient.ClientWithResponses {
 // CreateTestUser creates a user via the API and returns the response. Fails the test on transport error.
 func (f *Fixture) CreateTestUser(t *testing.T, ctx context.Context, username, email string) *apiclient.CreateUserResponse {
 	t.Helper()
-	resp, err := f.Client().CreateUserWithResponse(ctx, apiclient.InternalAuthSpecSchemasNewUser{
+	resp, err := f.Client().CreateUserWithResponse(ctx, apiclient.NewUser{
 		Username: username,
 		Email:    openapi_types.Email(email),
 	})
@@ -167,7 +167,7 @@ func (f *Fixture) CreateTestUser(t *testing.T, ctx context.Context, username, em
 // CreateTestApiKey creates an API key for the given userID. Fails the test on transport error.
 func (f *Fixture) CreateTestApiKey(t *testing.T, ctx context.Context, userID int64) *apiclient.CreateApiKeyResponse {
 	t.Helper()
-	resp, err := f.Client().CreateApiKeyWithResponse(ctx, apiclient.InternalAuthSpecSchemasNewApiKey{
+	resp, err := f.Client().CreateApiKeyWithResponse(ctx, apiclient.NewApiKey{
 		UserId: userID,
 	})
 	if err != nil {
@@ -183,7 +183,7 @@ func (f *Fixture) GetToken(t *testing.T, ctx context.Context, clientID, clientSe
 	if err != nil {
 		t.Fatalf("GetToken: parse client_id: %v", err)
 	}
-	resp, err := f.Client().CreateTokenWithResponse(ctx, apiclient.InternalAuthSpecSchemasTokenRequest{
+	resp, err := f.Client().CreateTokenWithResponse(ctx, apiclient.TokenRequest{
 		ClientId:     openapi_types.UUID(id),
 		ClientSecret: clientSecret,
 		GrantType:    apiclient.ClientCredentials,

@@ -1,18 +1,7 @@
 {
   "components": {
     "schemas": {
-      "Health": {
-        "properties": {
-          "status": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "status"
-        ],
-        "type": "object"
-      },
-      "internal_auth_spec_schemas_ApiKey": {
+      "ApiKey": {
         "properties": {
           "client_id": {
             "format": "uuid",
@@ -44,7 +33,7 @@
         ],
         "type": "object"
       },
-      "internal_auth_spec_schemas_CreatedApiKey": {
+      "CreatedApiKey": {
         "properties": {
           "client_id": {
             "format": "uuid",
@@ -72,115 +61,34 @@
         ],
         "type": "object"
       },
-      "internal_auth_spec_schemas_NewApiKey": {
+      "DailyUsage": {
         "properties": {
-          "expires_at": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "name": {
-            "maxLength": 255,
-            "type": "string"
-          },
-          "user_id": {
-            "format": "int64",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "user_id"
-        ],
-        "type": "object"
-      },
-      "internal_auth_spec_schemas_NewUser": {
-        "properties": {
-          "email": {
-            "format": "email",
-            "maxLength": 255,
-            "type": "string"
-          },
-          "username": {
-            "maxLength": 255,
-            "minLength": 1,
-            "type": "string"
-          }
-        },
-        "required": [
-          "username",
-          "email"
-        ],
-        "type": "object"
-      },
-      "internal_auth_spec_schemas_TokenRequest": {
-        "properties": {
-          "client_id": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "client_secret": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "grant_type": {
-            "enum": [
-              "client_credentials"
-            ],
-            "type": "string"
-          }
-        },
-        "required": [
-          "grant_type",
-          "client_id",
-          "client_secret"
-        ],
-        "type": "object"
-      },
-      "internal_auth_spec_schemas_TokenResponse": {
-        "properties": {
-          "access_token": {
-            "type": "string"
-          },
-          "expires_in": {
-            "format": "int64",
+          "count": {
             "type": "integer"
           },
-          "token_type": {
+          "date": {
+            "format": "date",
             "type": "string"
           }
         },
         "required": [
-          "access_token",
-          "token_type",
-          "expires_in"
+          "date",
+          "count"
         ],
         "type": "object"
       },
-      "internal_auth_spec_schemas_User": {
+      "Error": {
         "properties": {
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "id": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "username": {
+          "message": {
             "type": "string"
           }
         },
         "required": [
-          "id",
-          "username",
-          "email",
-          "createdAt"
+          "message"
         ],
         "type": "object"
       },
-      "internal_events_spec_schemas_EventHistory": {
+      "EventHistory": {
         "properties": {
           "created_at": {
             "format": "date-time",
@@ -197,7 +105,7 @@
             "type": "string"
           },
           "level": {
-            "$ref": "#/components/schemas/internal_events_spec_schemas_EventLevel"
+            "$ref": "#/components/schemas/EventLevel"
           }
         },
         "required": [
@@ -208,7 +116,7 @@
         ],
         "type": "object"
       },
-      "internal_events_spec_schemas_EventLevel": {
+      "EventLevel": {
         "enum": [
           "error",
           "warn",
@@ -216,26 +124,18 @@
         ],
         "type": "string"
       },
-      "internal_events_spec_schemas_NewEvent": {
+      "Health": {
         "properties": {
-          "details": {
+          "status": {
             "type": "string"
-          },
-          "event_type": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "level": {
-            "$ref": "#/components/schemas/internal_events_spec_schemas_EventLevel"
           }
         },
         "required": [
-          "level",
-          "event_type"
+          "status"
         ],
         "type": "object"
       },
-      "internal_items_spec_schemas_Item": {
+      "Item": {
         "properties": {
           "createdAt": {
             "format": "date-time",
@@ -259,7 +159,46 @@
         ],
         "type": "object"
       },
-      "internal_items_spec_schemas_NewItem": {
+      "NewApiKey": {
+        "properties": {
+          "expires_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 255,
+            "type": "string"
+          },
+          "user_id": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "user_id"
+        ],
+        "type": "object"
+      },
+      "NewEvent": {
+        "properties": {
+          "details": {
+            "type": "string"
+          },
+          "event_type": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "level": {
+            "$ref": "#/components/schemas/EventLevel"
+          }
+        },
+        "required": [
+          "level",
+          "event_type"
+        ],
+        "type": "object"
+      },
+      "NewItem": {
         "properties": {
           "description": {
             "type": "string"
@@ -275,14 +214,105 @@
         ],
         "type": "object"
       },
-      "internal_shared_spec_schemas_Error": {
+      "NewUser": {
         "properties": {
-          "message": {
+          "email": {
+            "format": "email",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "username": {
+            "maxLength": 255,
+            "minLength": 1,
             "type": "string"
           }
         },
         "required": [
-          "message"
+          "username",
+          "email"
+        ],
+        "type": "object"
+      },
+      "TokenRequest": {
+        "properties": {
+          "client_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "client_secret": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "grant_type": {
+            "enum": [
+              "client_credentials"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "grant_type",
+          "client_id",
+          "client_secret"
+        ],
+        "type": "object"
+      },
+      "TokenResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string"
+          },
+          "expires_in": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "token_type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "access_token",
+          "token_type",
+          "expires_in"
+        ],
+        "type": "object"
+      },
+      "UsageStats": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/DailyUsage"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "User": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "email",
+          "createdAt"
         ],
         "type": "object"
       }
@@ -310,7 +340,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/internal_auth_spec_schemas_ApiKey"
+                    "$ref": "#/components/schemas/ApiKey"
                   },
                   "type": "array"
                 }
@@ -322,7 +352,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/internal_shared_spec_schemas_Error"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             },
@@ -342,7 +372,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/internal_auth_spec_schemas_NewApiKey"
+                "$ref": "#/components/schemas/NewApiKey"
               }
             }
           },
@@ -353,7 +383,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/internal_auth_spec_schemas_CreatedApiKey"
+                  "$ref": "#/components/schemas/CreatedApiKey"
                 }
               }
             },
@@ -363,7 +393,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/internal_shared_spec_schemas_Error"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             },
@@ -395,7 +425,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/internal_shared_spec_schemas_Error"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             },
@@ -405,7 +435,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/internal_shared_spec_schemas_Error"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             },
@@ -427,7 +457,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/internal_events_spec_schemas_NewEvent"
+                "$ref": "#/components/schemas/NewEvent"
               }
             }
           },
@@ -438,7 +468,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/internal_events_spec_schemas_EventHistory"
+                  "$ref": "#/components/schemas/EventHistory"
                 }
               }
             },
@@ -455,7 +485,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/internal_events_spec_schemas_NewEvent"
+                "$ref": "#/components/schemas/NewEvent"
               }
             }
           },
@@ -466,7 +496,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/internal_events_spec_schemas_EventHistory"
+                  "$ref": "#/components/schemas/EventHistory"
                 }
               }
             },
@@ -515,7 +545,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/internal_items_spec_schemas_Item"
+                    "$ref": "#/components/schemas/Item"
                   },
                   "type": "array"
                 }
@@ -532,7 +562,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/internal_items_spec_schemas_NewItem"
+                "$ref": "#/components/schemas/NewItem"
               }
             }
           },
@@ -543,7 +573,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/internal_items_spec_schemas_Item"
+                  "$ref": "#/components/schemas/Item"
                 }
               }
             },
@@ -575,7 +605,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/internal_shared_spec_schemas_Error"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             },
@@ -602,7 +632,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/internal_items_spec_schemas_Item"
+                  "$ref": "#/components/schemas/Item"
                 }
               }
             },
@@ -612,7 +642,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/internal_shared_spec_schemas_Error"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             },
@@ -629,7 +659,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/internal_auth_spec_schemas_TokenRequest"
+                "$ref": "#/components/schemas/TokenRequest"
               }
             }
           },
@@ -640,7 +670,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/internal_auth_spec_schemas_TokenResponse"
+                  "$ref": "#/components/schemas/TokenResponse"
                 }
               }
             },
@@ -650,7 +680,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/internal_shared_spec_schemas_Error"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             },
@@ -660,7 +690,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/internal_shared_spec_schemas_Error"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             },
@@ -670,6 +700,59 @@
         "summary": "Exchange client credentials for a JWT access token"
       }
     },
+    "/usage": {
+      "get": {
+        "operationId": "GetUsage",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "from",
+            "required": true,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": true,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageStats"
+                }
+              }
+            },
+            "description": "Daily call counts grouped by day"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get API usage statistics for the authenticated user"
+      }
+    },
     "/users": {
       "post": {
         "operationId": "CreateUser",
@@ -677,7 +760,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/internal_auth_spec_schemas_NewUser"
+                "$ref": "#/components/schemas/NewUser"
               }
             }
           },
@@ -688,7 +771,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/internal_auth_spec_schemas_User"
+                  "$ref": "#/components/schemas/User"
                 }
               }
             },
@@ -698,7 +781,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/internal_shared_spec_schemas_Error"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             },

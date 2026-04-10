@@ -39,7 +39,7 @@ func TestCreateApiKey_Success(t *testing.T) {
 func TestCreateApiKey_UserNotFound(t *testing.T) {
 	ctx := context.Background()
 
-	resp, err := fixture.Client().CreateApiKeyWithResponse(ctx, apiclient.InternalAuthSpecSchemasNewApiKey{
+	resp, err := fixture.Client().CreateApiKeyWithResponse(ctx, apiclient.NewApiKey{
 		UserId: 999999,
 	})
 	if err != nil {
@@ -58,7 +58,7 @@ func TestCreateApiKey_WithFutureExpiry(t *testing.T) {
 	user := fixture.CreateTestUser(t, ctx, "expiryuser", "expiryuser@example.com")
 	future := time.Now().UTC().Add(24 * time.Hour)
 
-	resp, err := fixture.Client().CreateApiKeyWithResponse(ctx, apiclient.InternalAuthSpecSchemasNewApiKey{
+	resp, err := fixture.Client().CreateApiKeyWithResponse(ctx, apiclient.NewApiKey{
 		UserId:    user.JSON201.Id,
 		ExpiresAt: &future,
 	})
@@ -67,7 +67,7 @@ func TestCreateApiKey_WithFutureExpiry(t *testing.T) {
 	}
 
 	// Key with a future expiry should still be usable for token exchange.
-	tokenResp, err := fixture.Client().CreateTokenWithResponse(ctx, apiclient.InternalAuthSpecSchemasTokenRequest{
+	tokenResp, err := fixture.Client().CreateTokenWithResponse(ctx, apiclient.TokenRequest{
 		ClientId:     resp.JSON201.ClientId,
 		ClientSecret: resp.JSON201.ClientSecret,
 		GrantType:    apiclient.ClientCredentials,
@@ -169,7 +169,7 @@ func TestRevokeApiKey_Success(t *testing.T) {
 	}
 
 	// Token exchange with the revoked key should now fail.
-	tokenResp, _ := fixture.Client().CreateTokenWithResponse(ctx, apiclient.InternalAuthSpecSchemasTokenRequest{
+	tokenResp, _ := fixture.Client().CreateTokenWithResponse(ctx, apiclient.TokenRequest{
 		ClientId:     target.JSON201.ClientId,
 		ClientSecret: target.JSON201.ClientSecret,
 		GrantType:    apiclient.ClientCredentials,

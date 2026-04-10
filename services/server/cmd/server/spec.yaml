@@ -40,6 +40,9 @@ paths:
   /api-keys/{clientId}:
     $ref: "../../internal/auth/spec_paths.yaml#/paths/~1api-keys~1{clientId}"
 
+  /usage:
+    $ref: "../../internal/usage/spec_paths.yaml#/paths/~1usage"
+
 components:
   securitySchemes:
     bearerAuth:

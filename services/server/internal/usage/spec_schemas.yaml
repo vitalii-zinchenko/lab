@@ -1,0 +1,20 @@
+components:
+  schemas:
+    DailyUsage:
+      type: object
+      required: [date, count]
+      properties:
+        date:
+          type: string
+          format: date
+        count:
+          type: integer
+
+    UsageStats:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "./spec_schemas.yaml#/components/schemas/DailyUsage"
