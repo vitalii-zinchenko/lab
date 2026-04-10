@@ -13,5 +13,6 @@ services:
     networks:
       - lab-network
     environment:
+      JWT_SECRET: ${JWT_SECRET}
       DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@pgbouncer:5432/${POSTGRES_DB:-app}
     restart: unless-stopped

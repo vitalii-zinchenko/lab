@@ -1,3 +1,6 @@
 # Built binaries
 /server
 /tmp/
+
+# Local environment variables
+.env

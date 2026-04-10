@@ -2,6 +2,9 @@
 # Tiltfile — local development orchestrator
 # Groups: infrastructure, services, setup
 
+load('ext://dotenv', 'dotenv')
+dotenv('services/server/.env')
+
 # Allow running without a k8s cluster — we only use docker-compose + local processes
 allow_k8s_contexts(k8s_context())
 
@@ -63,6 +66,7 @@ local_resource(
     serve_env={
         'DATABASE_URL': 'postgres://postgres:postgres@localhost:6432/app?sslmode=disable',
         'CLICKHOUSE_URL': 'clickhouse://localhost:9000/default',
+        'JWT_SECRET': os.environ.get('JWT_SECRET', ''),
     },
     deps=['services/server/cmd', 'services/server/api', 'services/server/repository', 'services/server/model'],
     resource_deps=['db-migrate', 'ch-migrate', 'pgbouncer'],
