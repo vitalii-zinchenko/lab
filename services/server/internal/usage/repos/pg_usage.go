@@ -19,8 +19,8 @@ func NewPostgresUsageRepository(db *gorm.DB) UsageRepository {
 	return &pgUsageRepository{q: query.Use(db)}
 }
 
-func (r *pgUsageRepository) Record(ctx context.Context, entry models.Usage) error {
-	return r.q.Usage.WithContext(ctx).Create(&entry)
+func (r *pgUsageRepository) Record(ctx context.Context, entry *models.Usage) error {
+	return r.q.Usage.WithContext(ctx).Create(entry)
 }
 
 func (r *pgUsageRepository) GetDailyStats(ctx context.Context, userID int64, from, to time.Time) ([]models.DailyStats, error) {

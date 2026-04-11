@@ -19,8 +19,8 @@ func UsageTrackingMiddleware(repo repos.UsageRepository) shared.StrictMiddleware
 			response, err := f(ctx, request)
 
 			userID, ok := authhandlers.GetUserID(ctx.Request.Context())
-			if ok {
-				if recordErr := repo.Record(ctx.Request.Context(), models.Usage{
+			if ok && operationID != "GetUsage" {
+				if recordErr := repo.Record(ctx.Request.Context(), &models.Usage{
 					Timestamp: time.Now().UTC(),
 					UserID:    userID,
 					Operation: operationID,

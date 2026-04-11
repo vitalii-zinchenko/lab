@@ -7,6 +7,7 @@ import (
 
 	authhandlers "github.com/vitaliizinchenko/lab/internal/auth/handlers"
 	"github.com/vitaliizinchenko/lab/internal/shared"
+	"github.com/vitaliizinchenko/lab/internal/usage/models"
 	"github.com/vitaliizinchenko/lab/internal/usage/repos"
 )
 
@@ -18,6 +19,23 @@ type UsageHandler struct {
 // NewUsageHandler creates a UsageHandler with the given repository.
 func NewUsageHandler(repo repos.UsageRepository) *UsageHandler {
 	return &UsageHandler{repo: repo}
+}
+
+func (h *UsageHandler) CreateUsage(ctx context.Context, req shared.CreateUsageRequestObject) (shared.CreateUsageResponseObject, error) {
+	entry := &models.Usage{
+		UserID:    req.Body.UserId,
+		Timestamp: req.Body.Timestamp,
+		Operation: req.Body.Operation,
+	}
+	if err := h.repo.Record(ctx, entry); err != nil {
+		return nil, err
+	}
+	return shared.CreateUsage201JSONResponse{
+		Id:        entry.ID,
+		UserId:    entry.UserID,
+		Timestamp: entry.Timestamp,
+		Operation: entry.Operation,
+	}, nil
 }
 
 func (h *UsageHandler) GetUsage(ctx context.Context, req shared.GetUsageRequestObject) (shared.GetUsageResponseObject, error) {

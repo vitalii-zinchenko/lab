@@ -138,6 +138,13 @@ type NewItem struct {
 	Name        string  `json:"name"`
 }
 
+// NewUsage defines model for NewUsage.
+type NewUsage struct {
+	Operation string    `json:"operation"`
+	Timestamp time.Time `json:"timestamp"`
+	UserId    int64     `json:"user_id"`
+}
+
 // NewUser defines model for NewUser.
 type NewUser struct {
 	Email    openapi_types.Email `json:"email"`
@@ -159,6 +166,14 @@ type TokenResponse struct {
 	AccessToken string `json:"access_token"`
 	ExpiresIn   int64  `json:"expires_in"`
 	TokenType   string `json:"token_type"`
+}
+
+// UsageItem defines model for UsageItem.
+type UsageItem struct {
+	Id        int64     `json:"id"`
+	Operation string    `json:"operation"`
+	Timestamp time.Time `json:"timestamp"`
+	UserId    int64     `json:"user_id"`
 }
 
 // UsageStats defines model for UsageStats.
@@ -199,6 +214,9 @@ type CreateItemJSONRequestBody = NewItem
 
 // CreateTokenJSONRequestBody defines body for CreateToken for application/json ContentType.
 type CreateTokenJSONRequestBody = TokenRequest
+
+// CreateUsageJSONRequestBody defines body for CreateUsage for application/json ContentType.
+type CreateUsageJSONRequestBody = NewUsage
 
 // CreateUserJSONRequestBody defines body for CreateUser for application/json ContentType.
 type CreateUserJSONRequestBody = NewUser
@@ -241,6 +259,9 @@ type ServerInterface interface {
 	// Get API usage statistics for the authenticated user
 	// (GET /usage)
 	GetUsage(c *gin.Context, params GetUsageParams)
+	// Ingest a single usage record
+	// (POST /usage)
+	CreateUsage(c *gin.Context)
 	// Create a new user
 	// (POST /users)
 	CreateUser(c *gin.Context)
@@ -498,6 +519,19 @@ func (siw *ServerInterfaceWrapper) GetUsage(c *gin.Context) {
 	siw.Handler.GetUsage(c, params)
 }
 
+// CreateUsage operation middleware
+func (siw *ServerInterfaceWrapper) CreateUsage(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.CreateUsage(c)
+}
+
 // CreateUser operation middleware
 func (siw *ServerInterfaceWrapper) CreateUser(c *gin.Context) {
 
@@ -550,6 +584,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/items/:id", wrapper.GetItem)
 	router.POST(options.BaseURL+"/token", wrapper.CreateToken)
 	router.GET(options.BaseURL+"/usage", wrapper.GetUsage)
+	router.POST(options.BaseURL+"/usage", wrapper.CreateUsage)
 	router.POST(options.BaseURL+"/users", wrapper.CreateUser)
 }
 
@@ -834,6 +869,32 @@ func (response GetUsage401JSONResponse) VisitGetUsageResponse(w http.ResponseWri
 	return json.NewEncoder(w).Encode(response)
 }
 
+type CreateUsageRequestObject struct {
+	Body *CreateUsageJSONRequestBody
+}
+
+type CreateUsageResponseObject interface {
+	VisitCreateUsageResponse(w http.ResponseWriter) error
+}
+
+type CreateUsage201JSONResponse UsageItem
+
+func (response CreateUsage201JSONResponse) VisitCreateUsageResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateUsage400JSONResponse Error
+
+func (response CreateUsage400JSONResponse) VisitCreateUsageResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type CreateUserRequestObject struct {
 	Body *CreateUserJSONRequestBody
 }
@@ -898,6 +959,9 @@ type StrictServerInterface interface {
 	// Get API usage statistics for the authenticated user
 	// (GET /usage)
 	GetUsage(ctx context.Context, request GetUsageRequestObject) (GetUsageResponseObject, error)
+	// Ingest a single usage record
+	// (POST /usage)
+	CreateUsage(ctx context.Context, request CreateUsageRequestObject) (CreateUsageResponseObject, error)
 	// Create a new user
 	// (POST /users)
 	CreateUser(ctx context.Context, request CreateUserRequestObject) (CreateUserResponseObject, error)
@@ -1265,6 +1329,39 @@ func (sh *strictHandler) GetUsage(ctx *gin.Context, params GetUsageParams) {
 	}
 }
 
+// CreateUsage operation middleware
+func (sh *strictHandler) CreateUsage(ctx *gin.Context) {
+	var request CreateUsageRequestObject
+
+	var body CreateUsageJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateUsage(ctx, request.(CreateUsageRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateUsage")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(CreateUsageResponseObject); ok {
+		if err := validResponse.VisitCreateUsageResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // CreateUser operation middleware
 func (sh *strictHandler) CreateUser(ctx *gin.Context) {
 	var request CreateUserRequestObject
@@ -1301,32 +1398,34 @@ func (sh *strictHandler) CreateUser(ctx *gin.Context) {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"WgYxHsPF4t8AAAD//9vQb8YhIgAA",
+	"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",
+	"AAD//84fDaSnJgAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

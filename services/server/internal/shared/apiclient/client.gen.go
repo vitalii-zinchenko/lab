@@ -133,6 +133,13 @@ type NewItem struct {
 	Name        string  `json:"name"`
 }
 
+// NewUsage defines model for NewUsage.
+type NewUsage struct {
+	Operation string    `json:"operation"`
+	Timestamp time.Time `json:"timestamp"`
+	UserId    int64     `json:"user_id"`
+}
+
 // NewUser defines model for NewUser.
 type NewUser struct {
 	Email    openapi_types.Email `json:"email"`
@@ -154,6 +161,14 @@ type TokenResponse struct {
 	AccessToken string `json:"access_token"`
 	ExpiresIn   int64  `json:"expires_in"`
 	TokenType   string `json:"token_type"`
+}
+
+// UsageItem defines model for UsageItem.
+type UsageItem struct {
+	Id        int64     `json:"id"`
+	Operation string    `json:"operation"`
+	Timestamp time.Time `json:"timestamp"`
+	UserId    int64     `json:"user_id"`
 }
 
 // UsageStats defines model for UsageStats.
@@ -194,6 +209,9 @@ type CreateItemJSONRequestBody = NewItem
 
 // CreateTokenJSONRequestBody defines body for CreateToken for application/json ContentType.
 type CreateTokenJSONRequestBody = TokenRequest
+
+// CreateUsageJSONRequestBody defines body for CreateUsage for application/json ContentType.
+type CreateUsageJSONRequestBody = NewUsage
 
 // CreateUserJSONRequestBody defines body for CreateUser for application/json ContentType.
 type CreateUserJSONRequestBody = NewUser
@@ -316,6 +334,11 @@ type ClientInterface interface {
 
 	// GetUsage request
 	GetUsage(ctx context.Context, params *GetUsageParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateUsageWithBody request with any body
+	CreateUsageWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateUsage(ctx context.Context, body CreateUsageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateUserWithBody request with any body
 	CreateUserWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -517,6 +540,30 @@ func (c *Client) CreateToken(ctx context.Context, body CreateTokenJSONRequestBod
 
 func (c *Client) GetUsage(ctx context.Context, params *GetUsageParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetUsageRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateUsageWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateUsageRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateUsage(ctx context.Context, body CreateUsageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateUsageRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1013,6 +1060,46 @@ func NewGetUsageRequest(server string, params *GetUsageParams) (*http.Request, e
 	return req, nil
 }
 
+// NewCreateUsageRequest calls the generic CreateUsage builder with application/json body
+func NewCreateUsageRequest(server string, body CreateUsageJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateUsageRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateUsageRequestWithBody generates requests for CreateUsage with any type of body
+func NewCreateUsageRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/usage")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateUserRequest calls the generic CreateUser builder with application/json body
 func NewCreateUserRequest(server string, body CreateUserJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -1141,6 +1228,11 @@ type ClientWithResponsesInterface interface {
 
 	// GetUsageWithResponse request
 	GetUsageWithResponse(ctx context.Context, params *GetUsageParams, reqEditors ...RequestEditorFn) (*GetUsageResponse, error)
+
+	// CreateUsageWithBodyWithResponse request with any body
+	CreateUsageWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUsageResponse, error)
+
+	CreateUsageWithResponse(ctx context.Context, body CreateUsageJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateUsageResponse, error)
 
 	// CreateUserWithBodyWithResponse request with any body
 	CreateUserWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUserResponse, error)
@@ -1419,6 +1511,29 @@ func (r GetUsageResponse) StatusCode() int {
 	return 0
 }
 
+type CreateUsageResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *UsageItem
+	JSON400      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateUsageResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateUsageResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -1588,6 +1703,23 @@ func (c *ClientWithResponses) GetUsageWithResponse(ctx context.Context, params *
 		return nil, err
 	}
 	return ParseGetUsageResponse(rsp)
+}
+
+// CreateUsageWithBodyWithResponse request with arbitrary body returning *CreateUsageResponse
+func (c *ClientWithResponses) CreateUsageWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUsageResponse, error) {
+	rsp, err := c.CreateUsageWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateUsageResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateUsageWithResponse(ctx context.Context, body CreateUsageJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateUsageResponse, error) {
+	rsp, err := c.CreateUsage(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateUsageResponse(rsp)
 }
 
 // CreateUserWithBodyWithResponse request with arbitrary body returning *CreateUserResponse
@@ -1962,6 +2094,39 @@ func ParseGetUsageResponse(rsp *http.Response) (*GetUsageResponse, error) {
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateUsageResponse parses an HTTP response from a CreateUsageWithResponse call
+func ParseCreateUsageResponse(rsp *http.Response) (*CreateUsageResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateUsageResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest UsageItem
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
 
 	}
 

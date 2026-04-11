@@ -200,10 +200,8 @@ func TestGetUsage_UnauthenticatedCallsNotTracked(t *testing.T) {
 	if resp.StatusCode() != http.StatusOK {
 		t.Fatalf("expected 200, got %d: %s", resp.StatusCode(), string(resp.Body))
 	}
-	// Only the GetUsage call itself may appear (it's authenticated), unauthenticated ListItems should not.
-	for _, d := range resp.JSON200.Data {
-		if d.Count > 1 {
-			t.Errorf("expected at most 1 call (GetUsage itself), got %d", d.Count)
-		}
+	// GetUsage is excluded from tracking, and unauthenticated ListItems should not appear either.
+	if len(resp.JSON200.Data) != 0 {
+		t.Errorf("expected empty data, got %d entries", len(resp.JSON200.Data))
 	}
 }

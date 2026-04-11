@@ -1,10 +1,10 @@
 {
   "_": {
-    "postman_id": "14766375-6c8a-4e88-abcd-e97413307406"
+    "postman_id": "100dc016-5965-4610-ac8d-cd5bc3829761"
   },
   "item": [
     {
-      "id": "c88ea92c-a679-4392-a98a-6640acc35649",
+      "id": "13730431-3e16-4c60-b243-b1a81ee26885",
       "name": "Auth",
       "description": {
         "content": "",
@@ -12,7 +12,7 @@
       },
       "item": [
         {
-          "id": "166acf30-9010-4fa3-98da-0f46408d17ab",
+          "id": "8e8ed7c4-feb5-45eb-b285-7f32e3d273e8",
           "name": "List API keys for the authenticated user",
           "request": {
             "name": "List API keys for the authenticated user",
@@ -53,7 +53,7 @@
               "_": {
                 "postman_previewlanguage": "json"
               },
-              "id": "25886197-b18d-4b16-9c22-8e3417a84344",
+              "id": "50195ed3-d608-4b29-a7dd-1af9ce6ab3fb",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -91,14 +91,14 @@
                   "value": "application/json"
                 }
               ],
-              "body": "[\n  {\n    \"client_id\": \"b8edd790-7f47-885e-bd93-b6bceb501856\",\n    \"created_at\": \"1948-06-06T15:21:55.552Z\",\n    \"expires_at\": \"1960-09-22T22:10:48.646Z\",\n    \"last_used_at\": \"1991-04-02T00:58:09.113Z\",\n    \"name\": \"laborum id pariatur consequat sint\",\n    \"revoked_at\": \"1992-08-23T14:32:48.538Z\"\n  },\n  {\n    \"client_id\": \"urn:uuid:5121f92b-5eb3-512b-43e7-1ed67d014ea6\",\n    \"created_at\": \"1984-10-03T04:46:04.843Z\",\n    \"expires_at\": \"1996-11-03T12:11:14.628Z\",\n    \"last_used_at\": \"1999-09-05T18:10:42.858Z\",\n    \"name\": \"Duis qui tempor irure consectetur\",\n    \"revoked_at\": \"1955-02-09T16:01:12.136Z\"\n  }\n]",
+              "body": "[\n  {\n    \"client_id\": \"urn:uuid:7f649242-f798-99e5-77e7-899ea8c5ce68\",\n    \"created_at\": \"1995-01-06T16:32:22.769Z\",\n    \"expires_at\": \"1975-03-07T12:14:31.057Z\",\n    \"last_used_at\": \"1964-08-14T01:46:41.572Z\",\n    \"name\": \"consequat nulla occaecat deserunt\",\n    \"revoked_at\": \"1966-03-29T13:34:15.278Z\"\n  },\n  {\n    \"client_id\": \"urn:uuid:c8163d66-0e68-7bb4-6f65-bf3251ef3798\",\n    \"created_at\": \"1983-07-03T13:51:42.482Z\",\n    \"expires_at\": \"1992-05-18T03:39:51.415Z\",\n    \"last_used_at\": \"1977-04-21T09:12:16.682Z\",\n    \"name\": \"irure\",\n    \"revoked_at\": \"1992-04-06T05:24:28.135Z\"\n  }\n]",
               "cookie": []
             },
             {
               "_": {
                 "postman_previewlanguage": "json"
               },
-              "id": "11b5da78-1688-4924-a3be-2f0bdbb17fdb",
+              "id": "4fc9502c-b793-42f7-8a60-1836bd3fcc0b",
               "name": "Unauthorized",
               "originalRequest": {
                 "url": {
@@ -136,7 +136,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"occaecat tempor\"\n}",
+              "body": "{\n  \"message\": \"incididunt nisi velit est\"\n}",
               "cookie": []
             }
           ],
@@ -146,7 +146,7 @@
           }
         },
         {
-          "id": "e9a7882a-44ef-429d-af55-07895260ae80",
+          "id": "935b6d74-9c87-4956-9bee-d3b04c09cf2f",
           "name": "Create a new API key for a user",
           "request": {
             "name": "Create a new API key for a user",
@@ -176,7 +176,7 @@
             "method": "POST",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"user_id\": -6831140,\n  \"expires_at\": \"1990-06-30T19:17:56.783Z\",\n  \"name\": \"sint culpa\"\n}",
+              "raw": "{\n  \"user_id\": -35566994,\n  \"expires_at\": \"2019-02-26T16:28:19.406Z\",\n  \"name\": \"dolor dolor occaecat\"\n}",
               "options": {
                 "raw": {
                   "headerFamily": "json",
@@ -190,7 +190,7 @@
               "_": {
                 "postman_previewlanguage": "json"
               },
-              "id": "f427c64e-abc2-44af-8167-a170f3899b33",
+              "id": "2fd668c5-0431-4cd3-a58b-8e0fcf513b71",
               "name": "Created — client_secret is shown only once",
               "originalRequest": {
                 "url": {
@@ -216,7 +216,7 @@
                 "method": "POST",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"user_id\": -6831140,\n  \"expires_at\": \"1990-06-30T19:17:56.783Z\",\n  \"name\": \"sint culpa\"\n}",
+                  "raw": "{\n  \"user_id\": -35566994,\n  \"expires_at\": \"2019-02-26T16:28:19.406Z\",\n  \"name\": \"dolor dolor occaecat\"\n}",
                   "options": {
                     "raw": {
                       "headerFamily": "json",
@@ -233,14 +233,14 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"client_id\": \"47075cbd-1ee2-5e34-08ea-dfd7202b90cb\",\n  \"client_secret\": \"quis qui tempor\",\n  \"created_at\": \"1962-04-07T15:25:20.539Z\",\n  \"expires_at\": \"2023-03-17T18:29:10.139Z\",\n  \"name\": \"irure aliquip dolore dolore dolor\"\n}",
+              "body": "{\n  \"client_id\": \"d2c9a114-21bc-dcee-9016-b17e9fd83f26\",\n  \"client_secret\": \"minim tempor deserunt\",\n  \"created_at\": \"1988-02-13T05:50:14.395Z\",\n  \"expires_at\": \"1990-09-27T23:21:23.454Z\",\n  \"name\": \"quis\"\n}",
               "cookie": []
             },
             {
               "_": {
                 "postman_previewlanguage": "json"
               },
-              "id": "5d5ee1cc-4145-464c-8311-34c069e79079",
+              "id": "7cb8613d-17f4-43c4-967d-321c063add52",
               "name": "User not found",
               "originalRequest": {
                 "url": {
@@ -266,7 +266,7 @@
                 "method": "POST",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"user_id\": -6831140,\n  \"expires_at\": \"1990-06-30T19:17:56.783Z\",\n  \"name\": \"sint culpa\"\n}",
+                  "raw": "{\n  \"user_id\": -35566994,\n  \"expires_at\": \"2019-02-26T16:28:19.406Z\",\n  \"name\": \"dolor dolor occaecat\"\n}",
                   "options": {
                     "raw": {
                       "headerFamily": "json",
@@ -283,7 +283,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"occaecat tempor\"\n}",
+              "body": "{\n  \"message\": \"incididunt nisi velit est\"\n}",
               "cookie": []
             }
           ],
@@ -293,7 +293,7 @@
           }
         },
         {
-          "id": "a77e6ab0-cd59-4a65-9a76-b968639ee683",
+          "id": "7d299596-89fe-4c99-89c7-8c4cfe1d6892",
           "name": "Revoke an API key",
           "request": {
             "name": "Revoke an API key",
@@ -317,7 +317,7 @@
                     "type": "text/plain"
                   },
                   "type": "any",
-                  "value": "107d689c-a220-fd99-cd30-5a759a29672a",
+                  "value": "urn:uuid:df41c994-f252-2214-c3dc-5481be46e007",
                   "key": "clientId"
                 }
               ]
@@ -346,7 +346,7 @@
               "_": {
                 "postman_previewlanguage": "text"
               },
-              "id": "36f49d00-a331-4b06-b3c0-aaee12974ec5",
+              "id": "8ba89e78-359a-449f-9e9a-7ebea0376f4c",
               "name": "No Content",
               "originalRequest": {
                 "url": {
@@ -382,7 +382,7 @@
               "_": {
                 "postman_previewlanguage": "json"
               },
-              "id": "70a2065f-cf87-47e0-976f-6f6df135db5c",
+              "id": "3ab89a1b-636a-4b7c-ac48-2180c87c3a16",
               "name": "Unauthorized",
               "originalRequest": {
                 "url": {
@@ -421,14 +421,14 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"occaecat tempor\"\n}",
+              "body": "{\n  \"message\": \"incididunt nisi velit est\"\n}",
               "cookie": []
             },
             {
               "_": {
                 "postman_previewlanguage": "json"
               },
-              "id": "5dfc266d-0c35-4ca0-9a54-f8cd5737b9c6",
+              "id": "35a4b8f0-a502-4574-bb91-2d42b12b7136",
               "name": "Not found",
               "originalRequest": {
                 "url": {
@@ -467,7 +467,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"occaecat tempor\"\n}",
+              "body": "{\n  \"message\": \"incididunt nisi velit est\"\n}",
               "cookie": []
             }
           ],
@@ -477,7 +477,7 @@
           }
         },
         {
-          "id": "ee76c5b9-f788-4fba-bee5-cb9a6c2cadcf",
+          "id": "96adc6c3-ab05-4c62-a866-d586c13b1b1e",
           "name": "Exchange client credentials for a JWT access token",
           "request": {
             "name": "Exchange client credentials for a JWT access token",
@@ -507,7 +507,7 @@
             "method": "POST",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"grant_type\": \"client_credentials\",\n  \"client_id\": \"1256d07e-2473-92b7-65bb-135fc548c121\",\n  \"client_secret\": \"officia pariatur Excepteur aute\"\n}",
+              "raw": "{\n  \"grant_type\": \"client_credentials\",\n  \"client_id\": \"b83431bd-f1cc-3bd9-f947-ac333b7c5384\",\n  \"client_secret\": \"fugiat exercitation enim minim Excepte\"\n}",
               "options": {
                 "raw": {
                   "headerFamily": "json",
@@ -521,7 +521,7 @@
               "_": {
                 "postman_previewlanguage": "json"
               },
-              "id": "ef5d8326-f431-4bb3-8d4c-bf885c43eb0b",
+              "id": "7b2e6ea6-85c8-477b-a38e-8d021b13bd8f",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -547,7 +547,7 @@
                 "method": "POST",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"grant_type\": \"client_credentials\",\n  \"client_id\": \"1256d07e-2473-92b7-65bb-135fc548c121\",\n  \"client_secret\": \"officia pariatur Excepteur aute\"\n}",
+                  "raw": "{\n  \"grant_type\": \"client_credentials\",\n  \"client_id\": \"b83431bd-f1cc-3bd9-f947-ac333b7c5384\",\n  \"client_secret\": \"fugiat exercitation enim minim Excepte\"\n}",
                   "options": {
                     "raw": {
                       "headerFamily": "json",
@@ -564,14 +564,14 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"access_token\": \"in aliqua elit voluptate\",\n  \"token_type\": \"in ad\",\n  \"expires_in\": 47810809\n}",
+              "body": "{\n  \"access_token\": \"sed in cupidatat\",\n  \"token_type\": \"veniam nulla sit\",\n  \"expires_in\": -12328100\n}",
               "cookie": []
             },
             {
               "_": {
                 "postman_previewlanguage": "json"
               },
-              "id": "10079274-8d08-4f66-8a57-d644d723d655",
+              "id": "86414faf-763f-4c7c-afe8-fa8dcaf90464",
               "name": "Missing or invalid fields",
               "originalRequest": {
                 "url": {
@@ -597,7 +597,7 @@
                 "method": "POST",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"grant_type\": \"client_credentials\",\n  \"client_id\": \"1256d07e-2473-92b7-65bb-135fc548c121\",\n  \"client_secret\": \"officia pariatur Excepteur aute\"\n}",
+                  "raw": "{\n  \"grant_type\": \"client_credentials\",\n  \"client_id\": \"b83431bd-f1cc-3bd9-f947-ac333b7c5384\",\n  \"client_secret\": \"fugiat exercitation enim minim Excepte\"\n}",
                   "options": {
                     "raw": {
                       "headerFamily": "json",
@@ -614,14 +614,14 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"occaecat tempor\"\n}",
+              "body": "{\n  \"message\": \"incididunt nisi velit est\"\n}",
               "cookie": []
             },
             {
               "_": {
                 "postman_previewlanguage": "json"
               },
-              "id": "8a8d3a9d-35bb-40a3-a7cf-5a823be92ac6",
+              "id": "704c63d7-88e0-4a03-a66e-cb7f6a6564be",
               "name": "Invalid credentials, expired, or revoked key",
               "originalRequest": {
                 "url": {
@@ -647,7 +647,7 @@
                 "method": "POST",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"grant_type\": \"client_credentials\",\n  \"client_id\": \"1256d07e-2473-92b7-65bb-135fc548c121\",\n  \"client_secret\": \"officia pariatur Excepteur aute\"\n}",
+                  "raw": "{\n  \"grant_type\": \"client_credentials\",\n  \"client_id\": \"b83431bd-f1cc-3bd9-f947-ac333b7c5384\",\n  \"client_secret\": \"fugiat exercitation enim minim Excepte\"\n}",
                   "options": {
                     "raw": {
                       "headerFamily": "json",
@@ -664,7 +664,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"occaecat tempor\"\n}",
+              "body": "{\n  \"message\": \"incididunt nisi velit est\"\n}",
               "cookie": []
             }
           ],
@@ -674,7 +674,7 @@
           }
         },
         {
-          "id": "93a09940-b6d1-403c-bffb-5ed1e7f82641",
+          "id": "626d0e3b-bedf-473c-aca6-ae6a9160e5e8",
           "name": "Create a new user",
           "request": {
             "name": "Create a new user",
@@ -704,7 +704,7 @@
             "method": "POST",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"qui enim sunt Duis\",\n  \"email\": \"r0GD@wMKZRgvgMbcxYRfwxOLB.yaop\"\n}",
+              "raw": "{\n  \"username\": \"dolor voluptate quis pariatur\",\n  \"email\": \"hfW@zwZgsavTbNVckWjGQevADWO.mz\"\n}",
               "options": {
                 "raw": {
                   "headerFamily": "json",
@@ -718,7 +718,7 @@
               "_": {
                 "postman_previewlanguage": "json"
               },
-              "id": "ab5b4ca3-2370-417b-956b-42974da548cb",
+              "id": "079759c8-f0ea-4a85-84e5-82bcd5ee6632",
               "name": "Created",
               "originalRequest": {
                 "url": {
@@ -744,7 +744,7 @@
                 "method": "POST",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"username\": \"qui enim sunt Duis\",\n  \"email\": \"r0GD@wMKZRgvgMbcxYRfwxOLB.yaop\"\n}",
+                  "raw": "{\n  \"username\": \"dolor voluptate quis pariatur\",\n  \"email\": \"hfW@zwZgsavTbNVckWjGQevADWO.mz\"\n}",
                   "options": {
                     "raw": {
                       "headerFamily": "json",
@@ -761,14 +761,14 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": -78104711,\n  \"username\": \"occaecat sit deserunt\",\n  \"email\": \"ut Lorem sint qui\",\n  \"createdAt\": \"1968-01-17T15:30:25.911Z\"\n}",
+              "body": "{\n  \"id\": 16730228,\n  \"username\": \"elit est\",\n  \"email\": \"voluptate in laboris id\",\n  \"createdAt\": \"2023-10-16T16:56:12.355Z\"\n}",
               "cookie": []
             },
             {
               "_": {
                 "postman_previewlanguage": "json"
               },
-              "id": "e5558fbb-f643-4435-945b-3949667560db",
+              "id": "b90d3d04-3b7f-416b-8227-12c32c85aa5a",
               "name": "Username or email already taken",
               "originalRequest": {
                 "url": {
@@ -794,7 +794,7 @@
                 "method": "POST",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"username\": \"qui enim sunt Duis\",\n  \"email\": \"r0GD@wMKZRgvgMbcxYRfwxOLB.yaop\"\n}",
+                  "raw": "{\n  \"username\": \"dolor voluptate quis pariatur\",\n  \"email\": \"hfW@zwZgsavTbNVckWjGQevADWO.mz\"\n}",
                   "options": {
                     "raw": {
                       "headerFamily": "json",
@@ -811,7 +811,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"occaecat tempor\"\n}",
+              "body": "{\n  \"message\": \"incididunt nisi velit est\"\n}",
               "cookie": []
             }
           ],
@@ -824,7 +824,7 @@
       "event": []
     },
     {
-      "id": "7a7b131e-fe7c-4726-962a-4502bedb6989",
+      "id": "1448c7b2-3c4f-4bc2-a2c7-49a293d2fe18",
       "name": "Events",
       "description": {
         "content": "",
@@ -832,7 +832,7 @@
       },
       "item": [
         {
-          "id": "ea8b3c65-99bd-46c7-89c1-d572400cb4a9",
+          "id": "8f6142dc-b0d8-457f-b44c-33fc41713f2b",
           "name": "Create a ClickHouse event (test endpoint)",
           "request": {
             "name": "Create a ClickHouse event (test endpoint)",
@@ -862,7 +862,7 @@
             "method": "POST",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"level\": \"info\",\n  \"event_type\": \"cupidatat\",\n  \"details\": \"sed Excepteur adipisicing\"\n}",
+              "raw": "{\n  \"level\": \"info\",\n  \"event_type\": \"nostrud Ut aliqua tempor exercitation\",\n  \"details\": \"dolor cillum cupidatat sit\"\n}",
               "options": {
                 "raw": {
                   "headerFamily": "json",
@@ -876,7 +876,7 @@
               "_": {
                 "postman_previewlanguage": "json"
               },
-              "id": "b38c46e5-16ef-418c-b136-be0a62fdf185",
+              "id": "a6786325-0aa8-4301-b8f7-25e0dc59f0c5",
               "name": "Created",
               "originalRequest": {
                 "url": {
@@ -902,7 +902,7 @@
                 "method": "POST",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"level\": \"info\",\n  \"event_type\": \"cupidatat\",\n  \"details\": \"sed Excepteur adipisicing\"\n}",
+                  "raw": "{\n  \"level\": \"info\",\n  \"event_type\": \"nostrud Ut aliqua tempor exercitation\",\n  \"details\": \"dolor cillum cupidatat sit\"\n}",
                   "options": {
                     "raw": {
                       "headerFamily": "json",
@@ -919,7 +919,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": \"urn:uuid:20ea704f-68c6-2d13-db27-f1a71ff17608\",\n  \"level\": \"error\",\n  \"event_type\": \"qui ut proident\",\n  \"created_at\": \"1962-05-14T07:50:05.202Z\",\n  \"details\": \"non\"\n}",
+              "body": "{\n  \"id\": \"55d7653a-f4c4-53f9-552f-024b35d02874\",\n  \"level\": \"info\",\n  \"event_type\": \"officia dolore\",\n  \"created_at\": \"2015-07-18T09:09:14.363Z\",\n  \"details\": \"non est commodo eiusmod\"\n}",
               "cookie": []
             }
           ],
@@ -929,7 +929,7 @@
           }
         },
         {
-          "id": "03de52e9-275b-4454-9ae2-5c79c12918c1",
+          "id": "dd87fdbc-f51d-4873-a05a-b542901fcc9c",
           "name": "Create an event",
           "request": {
             "name": "Create an event",
@@ -959,7 +959,7 @@
             "method": "POST",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"level\": \"info\",\n  \"event_type\": \"cupidatat\",\n  \"details\": \"sed Excepteur adipisicing\"\n}",
+              "raw": "{\n  \"level\": \"info\",\n  \"event_type\": \"nostrud Ut aliqua tempor exercitation\",\n  \"details\": \"dolor cillum cupidatat sit\"\n}",
               "options": {
                 "raw": {
                   "headerFamily": "json",
@@ -973,7 +973,7 @@
               "_": {
                 "postman_previewlanguage": "json"
               },
-              "id": "3dec6aea-382b-47a3-8534-4eb2ac90323d",
+              "id": "b9dc92bb-7189-4b1d-ac89-31518b6487c0",
               "name": "Created",
               "originalRequest": {
                 "url": {
@@ -999,7 +999,7 @@
                 "method": "POST",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"level\": \"info\",\n  \"event_type\": \"cupidatat\",\n  \"details\": \"sed Excepteur adipisicing\"\n}",
+                  "raw": "{\n  \"level\": \"info\",\n  \"event_type\": \"nostrud Ut aliqua tempor exercitation\",\n  \"details\": \"dolor cillum cupidatat sit\"\n}",
                   "options": {
                     "raw": {
                       "headerFamily": "json",
@@ -1016,7 +1016,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": \"urn:uuid:20ea704f-68c6-2d13-db27-f1a71ff17608\",\n  \"level\": \"error\",\n  \"event_type\": \"qui ut proident\",\n  \"created_at\": \"1962-05-14T07:50:05.202Z\",\n  \"details\": \"non\"\n}",
+              "body": "{\n  \"id\": \"55d7653a-f4c4-53f9-552f-024b35d02874\",\n  \"level\": \"info\",\n  \"event_type\": \"officia dolore\",\n  \"created_at\": \"2015-07-18T09:09:14.363Z\",\n  \"details\": \"non est commodo eiusmod\"\n}",
               "cookie": []
             }
           ],
@@ -1029,7 +1029,7 @@
       "event": []
     },
     {
-      "id": "fd8b36c2-3c35-43f2-bef4-f3dbd90131ff",
+      "id": "f2bbea8b-e995-494f-a48e-1555be888add",
       "name": "Health",
       "description": {
         "content": "",
@@ -1037,7 +1037,7 @@
       },
       "item": [
         {
-          "id": "46b151b4-a97a-42f7-8757-1399dde9580e",
+          "id": "ca90c0ef-f763-44a6-8c53-2ef53be1f4ab",
           "name": "Health check",
           "request": {
             "name": "Health check",
@@ -1068,7 +1068,7 @@
               "_": {
                 "postman_previewlanguage": "json"
               },
-              "id": "063e592f-0360-4a0b-bfcb-d78912d190a2",
+              "id": "d1f30718-9eab-4867-94a0-4b1e96c51cd6",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -1098,7 +1098,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"status\": \"su\"\n}",
+              "body": "{\n  \"status\": \"est minim in do officia\"\n}",
               "cookie": []
             }
           ],
@@ -1111,7 +1111,7 @@
       "event": []
     },
     {
-      "id": "eddbe68d-2c11-42f4-ade6-125640e90869",
+      "id": "26733160-6167-421f-b46f-f4f50e23c35f",
       "name": "Items",
       "description": {
         "content": "",
@@ -1119,7 +1119,7 @@
       },
       "item": [
         {
-          "id": "71f5b9fc-cf4a-40fb-ab55-fff2e175af7b",
+          "id": "552a7143-015f-4629-905b-029c3055baf2",
           "name": "List all items",
           "request": {
             "name": "List all items",
@@ -1160,7 +1160,7 @@
               "_": {
                 "postman_previewlanguage": "json"
               },
-              "id": "7ae835b5-4f70-4153-ab71-7be56853fc41",
+              "id": "366d3b34-5ef5-4fe9-b010-1859caf149b9",
               "name": "List of items",
               "originalRequest": {
                 "url": {
@@ -1200,7 +1200,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "[\n  {\n    \"id\": \"urn:uuid:a383a28b-172f-ad00-4704-a50308fdf027\",\n    \"name\": \"dolor consectetur adipisicing mollit anim\",\n    \"createdAt\": \"2002-09-04T21:26:40.755Z\",\n    \"description\": \"dolore magna in\"\n  },\n  {\n    \"id\": \"urn:uuid:b7e61651-4c58-7af8-e1ac-801b10fbedac\",\n    \"name\": \"fugiat\",\n    \"createdAt\": \"2021-03-03T16:58:43.605Z\",\n    \"description\": \"adipisicing exercitation quis nulla\"\n  }\n]",
+              "body": "[\n  {\n    \"id\": \"urn:uuid:feaabd78-3c28-dc87-a8b6-1276dcece5df\",\n    \"name\": \"minim magna aliquip\",\n    \"createdAt\": \"1946-06-12T23:18:51.757Z\",\n    \"description\": \"id fugiat occaecat\"\n  },\n  {\n    \"id\": \"urn:uuid:65140a0f-3b69-daa7-0793-c4c49bd70e96\",\n    \"name\": \"dolor adipisicing est sint\",\n    \"createdAt\": \"2023-06-09T17:49:19.215Z\",\n    \"description\": \"Ut\"\n  }\n]",
               "cookie": []
             }
           ],
@@ -1210,7 +1210,7 @@
           }
         },
         {
-          "id": "077eb898-8c3f-4dfb-8f36-b0a698834574",
+          "id": "1cbc0100-0d3b-402a-be8e-2dea323f8f35",
           "name": "Create an item",
           "request": {
             "name": "Create an item",
@@ -1240,7 +1240,7 @@
             "method": "POST",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"ut tempor officia\",\n  \"description\": \"minim aliquip\"\n}",
+              "raw": "{\n  \"name\": \"irure elit in laborum\",\n  \"description\": \"culpa reprehenderit tempor\"\n}",
               "options": {
                 "raw": {
                   "headerFamily": "json",
@@ -1254,7 +1254,7 @@
               "_": {
                 "postman_previewlanguage": "json"
               },
-              "id": "17230abc-9bb9-4089-adea-775982eb4f80",
+              "id": "082f80ac-30a7-40a6-a2d2-647381ebc0ae",
               "name": "Created",
               "originalRequest": {
                 "url": {
@@ -1280,7 +1280,7 @@
                 "method": "POST",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"name\": \"ut tempor officia\",\n  \"description\": \"minim aliquip\"\n}",
+                  "raw": "{\n  \"name\": \"irure elit in laborum\",\n  \"description\": \"culpa reprehenderit tempor\"\n}",
                   "options": {
                     "raw": {
                       "headerFamily": "json",
@@ -1297,7 +1297,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": \"2922b319-f7ae-b0c9-509a-27063e1f3228\",\n  \"name\": \"irure\",\n  \"createdAt\": \"1986-01-07T21:20:49.883Z\",\n  \"description\": \"incididunt sit\"\n}",
+              "body": "{\n  \"id\": \"urn:uuid:842ad281-9ee0-5527-4bb3-8b200b1fa5f3\",\n  \"name\": \"fugiat ut\",\n  \"createdAt\": \"2003-04-03T13:26:32.871Z\",\n  \"description\": \"et adipisi\"\n}",
               "cookie": []
             }
           ],
@@ -1307,7 +1307,7 @@
           }
         },
         {
-          "id": "3db24b33-5b38-4bbb-8754-8af6d7a6caa7",
+          "id": "f3d752f0-91b9-4dee-a6d9-808ebb608676",
           "name": "Delete an item by ID",
           "request": {
             "name": "Delete an item by ID",
@@ -1331,7 +1331,7 @@
                     "type": "text/plain"
                   },
                   "type": "any",
-                  "value": "107d689c-a220-fd99-cd30-5a759a29672a",
+                  "value": "urn:uuid:df41c994-f252-2214-c3dc-5481be46e007",
                   "key": "id"
                 }
               ]
@@ -1350,7 +1350,7 @@
               "_": {
                 "postman_previewlanguage": "text"
               },
-              "id": "d433e00a-5784-4a01-8040-bf148550c774",
+              "id": "5aed238b-b162-4410-97a8-1407a4182f62",
               "name": "No Content",
               "originalRequest": {
                 "url": {
@@ -1376,7 +1376,7 @@
               "_": {
                 "postman_previewlanguage": "json"
               },
-              "id": "5fa031e4-ed26-474c-a286-21d039e03ee4",
+              "id": "fe8690b3-3d87-46ef-853e-cb300e40eff2",
               "name": "Not found",
               "originalRequest": {
                 "url": {
@@ -1407,7 +1407,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"occaecat tempor\"\n}",
+              "body": "{\n  \"message\": \"incididunt nisi velit est\"\n}",
               "cookie": []
             }
           ],
@@ -1417,7 +1417,7 @@
           }
         },
         {
-          "id": "d33a5d1d-4a82-4946-ae87-158483a45c97",
+          "id": "6a36ef6e-ea07-4bc9-89ba-9ce0606ceb68",
           "name": "Get an item by ID",
           "request": {
             "name": "Get an item by ID",
@@ -1441,7 +1441,7 @@
                     "type": "text/plain"
                   },
                   "type": "any",
-                  "value": "107d689c-a220-fd99-cd30-5a759a29672a",
+                  "value": "urn:uuid:df41c994-f252-2214-c3dc-5481be46e007",
                   "key": "id"
                 }
               ]
@@ -1460,7 +1460,7 @@
               "_": {
                 "postman_previewlanguage": "json"
               },
-              "id": "0593656d-ef15-49d5-9fd4-ca3e5ea3813f",
+              "id": "38a995a0-01c3-4e4a-88f5-01367b1100f2",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -1491,14 +1491,14 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": \"2922b319-f7ae-b0c9-509a-27063e1f3228\",\n  \"name\": \"irure\",\n  \"createdAt\": \"1986-01-07T21:20:49.883Z\",\n  \"description\": \"incididunt sit\"\n}",
+              "body": "{\n  \"id\": \"urn:uuid:842ad281-9ee0-5527-4bb3-8b200b1fa5f3\",\n  \"name\": \"fugiat ut\",\n  \"createdAt\": \"2003-04-03T13:26:32.871Z\",\n  \"description\": \"et adipisi\"\n}",
               "cookie": []
             },
             {
               "_": {
                 "postman_previewlanguage": "json"
               },
-              "id": "300b548f-da13-4e73-8ff0-a42ff7c93153",
+              "id": "f6f73b3b-7c0a-478f-9a1f-c578c511bc2a",
               "name": "Not found",
               "originalRequest": {
                 "url": {
@@ -1529,7 +1529,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"occaecat tempor\"\n}",
+              "body": "{\n  \"message\": \"incididunt nisi velit est\"\n}",
               "cookie": []
             }
           ],
@@ -1542,7 +1542,7 @@
       "event": []
     },
     {
-      "id": "2faf922e-c726-429d-822a-c165c4990527",
+      "id": "2ab04ffe-b1d9-499f-9d30-f24dd17a3be4",
       "name": "Usage",
       "description": {
         "content": "",
@@ -1550,7 +1550,7 @@
       },
       "item": [
         {
-          "id": "d944aca5-5d33-459f-99c2-d33f10ba1204",
+          "id": "57cb3024-9660-4505-9c1e-d8adaa878009",
           "name": "Get API usage statistics for the authenticated user",
           "request": {
             "name": "Get API usage statistics for the authenticated user",
@@ -1572,7 +1572,7 @@
                     "type": "text/plain"
                   },
                   "key": "from",
-                  "value": "2007-09-04T18:49:37.507Z"
+                  "value": "2007-09-24T16:17:35.205Z"
                 },
                 {
                   "disabled": false,
@@ -1581,7 +1581,7 @@
                     "type": "text/plain"
                   },
                   "key": "to",
-                  "value": "2007-09-04T18:49:37.507Z"
+                  "value": "2007-09-24T16:17:35.205Z"
                 }
               ],
               "variable": []
@@ -1610,7 +1610,7 @@
               "_": {
                 "postman_previewlanguage": "json"
               },
-              "id": "037d53cf-ce31-46be-a638-13351aa8adf0",
+              "id": "e2405307-ddd9-422e-94dd-b059f01d4d73",
               "name": "Daily call counts grouped by day",
               "originalRequest": {
                 "url": {
@@ -1628,7 +1628,7 @@
                         "type": "text/plain"
                       },
                       "key": "from",
-                      "value": "2007-09-04T18:49:37.507Z"
+                      "value": "2007-09-24T16:17:35.205Z"
                     },
                     {
                       "disabled": false,
@@ -1637,7 +1637,7 @@
                         "type": "text/plain"
                       },
                       "key": "to",
-                      "value": "2007-09-04T18:49:37.507Z"
+                      "value": "2007-09-24T16:17:35.205Z"
                     }
                   ],
                   "variable": []
@@ -1667,14 +1667,14 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"data\": [\n    {\n      \"date\": \"1975-02-13\",\n      \"count\": -38490946\n    },\n    {\n      \"date\": \"1947-07-12\",\n      \"count\": 49164065\n    }\n  ]\n}",
+              "body": "{\n  \"data\": [\n    {\n      \"date\": \"1964-09-09\",\n      \"count\": 58479693\n    },\n    {\n      \"date\": \"1991-08-24\",\n      \"count\": 59274652\n    }\n  ]\n}",
               "cookie": []
             },
             {
               "_": {
                 "postman_previewlanguage": "json"
               },
-              "id": "8725b2e0-b396-4013-a394-46e1dd820174",
+              "id": "4918954a-3273-4e37-9b28-e17a5e0018b6",
               "name": "Unauthorized",
               "originalRequest": {
                 "url": {
@@ -1692,7 +1692,7 @@
                         "type": "text/plain"
                       },
                       "key": "from",
-                      "value": "2007-09-04T18:49:37.507Z"
+                      "value": "2007-09-24T16:17:35.205Z"
                     },
                     {
                       "disabled": false,
@@ -1701,7 +1701,7 @@
                         "type": "text/plain"
                       },
                       "key": "to",
-                      "value": "2007-09-04T18:49:37.507Z"
+                      "value": "2007-09-24T16:17:35.205Z"
                     }
                   ],
                   "variable": []
@@ -1731,7 +1731,154 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"occaecat tempor\"\n}",
+              "body": "{\n  \"message\": \"incididunt nisi velit est\"\n}",
+              "cookie": []
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "7ab444be-4910-4c68-a1ff-f2edab89fa1d",
+          "name": "Ingest a single usage record",
+          "request": {
+            "name": "Ingest a single usage record",
+            "description": {
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "usage"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": -90217823,\n  \"timestamp\": \"2008-04-21T10:44:13.306Z\",\n  \"operation\": \"ad elit\"\n}",
+              "options": {
+                "raw": {
+                  "headerFamily": "json",
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "_": {
+                "postman_previewlanguage": "json"
+              },
+              "id": "8bf1f0fb-780e-410a-bba0-bc5697bf6623",
+              "name": "Created",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "usage"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"user_id\": -90217823,\n  \"timestamp\": \"2008-04-21T10:44:13.306Z\",\n  \"operation\": \"ad elit\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": -80583038,\n  \"user_id\": 52487070,\n  \"timestamp\": \"1979-01-23T08:05:28.448Z\",\n  \"operation\": \"amet nostrud est\"\n}",
+              "cookie": []
+            },
+            {
+              "_": {
+                "postman_previewlanguage": "json"
+              },
+              "id": "4c9e6858-7b74-4f76-9976-231b690c022a",
+              "name": "Bad request",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "usage"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"user_id\": -90217823,\n  \"timestamp\": \"2008-04-21T10:44:13.306Z\",\n  \"operation\": \"ad elit\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"incididunt nisi velit est\"\n}",
               "cookie": []
             }
           ],
@@ -1748,7 +1895,7 @@
     {
       "listen": "prerequest",
       "script": {
-        "id": "1dea0ada-a182-4d3c-8306-8cfaebc0f57c",
+        "id": "3bfde125-a4d1-4278-985e-4aa62ce487e6",
         "type": "text/javascript",
         "exec": [
           "const now = Date.now();\nconst expiry = pm.variables.get(\"token_expiry\");\nconst existingToken = pm.variables.get(\"bearerToken\");\n\nconst applyToken = (token) => {\n    pm.collectionVariables.set(\"bearerToken\", token);\n    pm.request.headers.upsert({ key: \"Authorization\", value: \"Bearer \" + token });\n};\n\n// Reuse existing token if still valid\nif (existingToken && expiry && now < parseInt(expiry)) {\n    applyToken(existingToken);\n    return;\n}\n\nconst baseUrl = pm.variables.get(\"baseUrl\") || pm.variables.get(\"base_url\");\nconst clientId = pm.variables.get(\"client_id\");\nconst clientSecret = pm.variables.get(\"client_secret\");\n\nif (!clientId || !clientSecret) {\n    console.log(\"Skipping token refresh: client_id or client_secret not set\");\n    return;\n}\n\npm.sendRequest({\n    url: baseUrl + \"/token\",\n    method: \"POST\",\n    header: { \"Content-Type\": \"application/json\" },\n    body: {\n        mode: \"raw\",\n        raw: JSON.stringify({\n            grant_type: \"client_credentials\",\n            client_id: clientId,\n            client_secret: clientSecret\n        })\n    }\n}, (err, res) => {\n    if (err) {\n        console.error(\"Token refresh failed:\", err);\n        return;\n    }\n    const body = res.json();\n    applyToken(body.access_token);\n    // Refresh 60 seconds before expiry\n    pm.collectionVariables.set(\"token_expiry\", String(now + (body.expires_in - 60) * 1000));\n});\n"
@@ -1789,7 +1936,7 @@
     }
   ],
   "info": {
-    "_postman_id": "14766375-6c8a-4e88-abcd-e97413307406",
+    "_postman_id": "100dc016-5965-4610-ac8d-cd5bc3829761",
     "name": "Lab API",
     "version": {
       "raw": "1.0.0",

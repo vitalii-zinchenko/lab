@@ -1,5 +1,28 @@
 paths:
   /usage:
+    post:
+      tags: [Usage]
+      operationId: CreateUsage
+      summary: Ingest a single usage record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./spec_schemas.yaml#/components/schemas/NewUsage"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "./spec_schemas.yaml#/components/schemas/UsageItem"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "../shared/spec_schemas.yaml#/components/schemas/Error"
     get:
       tags: [Usage]
       operationId: GetUsage
