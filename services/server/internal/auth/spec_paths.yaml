@@ -1,6 +1,7 @@
 paths:
   /users:
     post:
+      tags: [Auth]
       operationId: CreateUser
       summary: Create a new user
       requestBody:
@@ -25,6 +26,7 @@ paths:
 
   /token:
     post:
+      tags: [Auth]
       operationId: CreateToken
       summary: Exchange client credentials for a JWT access token
       requestBody:
@@ -55,6 +57,7 @@ paths:
 
   /api-keys:
     post:
+      tags: [Auth]
       operationId: CreateApiKey
       summary: Create a new API key for a user
       requestBody:
@@ -78,6 +81,7 @@ paths:
                 $ref: "../shared/spec_schemas.yaml#/components/schemas/Error"
 
     get:
+      tags: [Auth]
       operationId: ListApiKeys
       summary: List API keys for the authenticated user
       security:
@@ -100,6 +104,7 @@ paths:
 
   /api-keys/{clientId}:
     delete:
+      tags: [Auth]
       operationId: RevokeApiKey
       summary: Revoke an API key
       security:

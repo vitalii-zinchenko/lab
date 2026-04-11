@@ -1,6 +1,7 @@
 paths:
   /usage:
     get:
+      tags: [Usage]
       operationId: GetUsage
       summary: Get API usage statistics for the authenticated user
       security:

@@ -1,6 +1,7 @@
 paths:
   /items:
     get:
+      tags: [Items]
       operationId: ListItems
       summary: List all items
       parameters:
@@ -22,6 +23,7 @@ paths:
                   $ref: "./spec_schemas.yaml#/components/schemas/Item"
 
     post:
+      tags: [Items]
       operationId: CreateItem
       summary: Create an item
       requestBody:
@@ -40,6 +42,7 @@ paths:
 
   /items/{id}:
     get:
+      tags: [Items]
       operationId: GetItem
       summary: Get an item by ID
       parameters:
@@ -64,6 +67,7 @@ paths:
                 $ref: "../shared/spec_schemas.yaml#/components/schemas/Error"
 
     delete:
+      tags: [Items]
       operationId: DeleteItem
       summary: Delete an item by ID
       parameters:

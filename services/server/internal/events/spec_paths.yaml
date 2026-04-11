@@ -1,6 +1,7 @@
 paths:
   /events:
     post:
+      tags: [Events]
       operationId: CreateEvent
       summary: Create an event
       requestBody:
@@ -19,6 +20,7 @@ paths:
 
   /ch-events:
     post:
+      tags: [Events]
       operationId: CreateChEvent
       summary: Create a ClickHouse event (test endpoint)
       requestBody:

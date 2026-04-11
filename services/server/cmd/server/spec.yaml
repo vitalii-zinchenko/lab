@@ -6,6 +6,7 @@ info:
 paths:
   /health:
     get:
+      tags: [Health]
       operationId: GetHealth
       summary: Health check
       responses:

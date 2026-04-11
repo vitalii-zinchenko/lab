@@ -364,7 +364,10 @@
             "bearerAuth": []
           }
         ],
-        "summary": "List API keys for the authenticated user"
+        "summary": "List API keys for the authenticated user",
+        "tags": [
+          "Auth"
+        ]
       },
       "post": {
         "operationId": "CreateApiKey",
@@ -400,7 +403,10 @@
             "description": "User not found"
           }
         },
-        "summary": "Create a new API key for a user"
+        "summary": "Create a new API key for a user",
+        "tags": [
+          "Auth"
+        ]
       }
     },
     "/api-keys/{clientId}": {
@@ -447,7 +453,10 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Revoke an API key"
+        "summary": "Revoke an API key",
+        "tags": [
+          "Auth"
+        ]
       }
     },
     "/ch-events": {
@@ -475,7 +484,10 @@
             "description": "Created"
           }
         },
-        "summary": "Create a ClickHouse event (test endpoint)"
+        "summary": "Create a ClickHouse event (test endpoint)",
+        "tags": [
+          "Events"
+        ]
       }
     },
     "/events": {
@@ -503,7 +515,10 @@
             "description": "Created"
           }
         },
-        "summary": "Create an event"
+        "summary": "Create an event",
+        "tags": [
+          "Events"
+        ]
       }
     },
     "/health": {
@@ -521,7 +536,10 @@
             "description": "OK"
           }
         },
-        "summary": "Health check"
+        "summary": "Health check",
+        "tags": [
+          "Health"
+        ]
       }
     },
     "/items": {
@@ -554,7 +572,10 @@
             "description": "List of items"
           }
         },
-        "summary": "List all items"
+        "summary": "List all items",
+        "tags": [
+          "Items"
+        ]
       },
       "post": {
         "operationId": "CreateItem",
@@ -580,7 +601,10 @@
             "description": "Created"
           }
         },
-        "summary": "Create an item"
+        "summary": "Create an item",
+        "tags": [
+          "Items"
+        ]
       }
     },
     "/items/{id}": {
@@ -612,7 +636,10 @@
             "description": "Not found"
           }
         },
-        "summary": "Delete an item by ID"
+        "summary": "Delete an item by ID",
+        "tags": [
+          "Items"
+        ]
       },
       "get": {
         "operationId": "GetItem",
@@ -649,7 +676,10 @@
             "description": "Not found"
           }
         },
-        "summary": "Get an item by ID"
+        "summary": "Get an item by ID",
+        "tags": [
+          "Items"
+        ]
       }
     },
     "/token": {
@@ -697,7 +727,10 @@
             "description": "Invalid credentials, expired, or revoked key"
           }
         },
-        "summary": "Exchange client credentials for a JWT access token"
+        "summary": "Exchange client credentials for a JWT access token",
+        "tags": [
+          "Auth"
+        ]
       }
     },
     "/usage": {
@@ -750,7 +783,10 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Get API usage statistics for the authenticated user"
+        "summary": "Get API usage statistics for the authenticated user",
+        "tags": [
+          "Usage"
+        ]
       }
     },
     "/users": {
@@ -788,7 +824,10 @@
             "description": "Username or email already taken"
           }
         },
-        "summary": "Create a new user"
+        "summary": "Create a new user",
+        "tags": [
+          "Auth"
+        ]
       }
     }
   }

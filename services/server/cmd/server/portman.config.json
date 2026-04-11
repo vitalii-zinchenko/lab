@@ -1,0 +1,14 @@
+{
+  "globals": {
+    "collectionPreRequestScripts": [
+      "file:./scripts/preRequest.js"
+    ],
+    "collectionVariables": {
+      "base_url": "http://localhost:8080",
+      "client_id": "",
+      "client_secret": "",
+      "bearerToken": "",
+      "token_expiry": "0"
+    }
+  }
+}
