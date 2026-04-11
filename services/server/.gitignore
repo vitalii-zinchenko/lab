@@ -2,5 +2,8 @@
 /server
 /tmp/
 
+# Portman working directory
+cmd/server/tmp/
+
 # Local environment variables
 .env
