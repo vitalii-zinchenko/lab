@@ -5,7 +5,8 @@ module.exports = {
   entry: {
     smoke:  './src/smoke.ts',
     load:   './src/load.ts',
-    stress: './src/stress.ts',
+    stress:        './src/stress.ts',
+    'insert-usage': './src/insert-usage.ts',
   },
   output: {
     path: path.resolve(__dirname, 'dist'),

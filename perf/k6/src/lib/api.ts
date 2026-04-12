@@ -47,3 +47,14 @@ export function deleteItem(id: string) {
     tags: { endpoint: 'delete_item' },
   });
 }
+
+export function createUsage(userId: number, operation: string, timestamp: string) {
+  return http.post(
+    `${BASE_URL}/usage`,
+    JSON.stringify({ user_id: userId, operation, timestamp }),
+    {
+      headers: JSON_HEADERS,
+      tags: { endpoint: 'create_usage' },
+    },
+  );
+}
