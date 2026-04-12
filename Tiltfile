@@ -9,6 +9,11 @@ dotenv('services/server/.env')
 allow_k8s_contexts(k8s_context())
 
 # ============================================================
+# Images
+# ============================================================
+docker_build('infra_server', 'services/server')
+
+# ============================================================
 # Infrastructure (Docker Compose)
 # ============================================================
 docker_compose('./infra/docker-compose.yml')
@@ -58,21 +63,8 @@ local_resource(
 # ============================================================
 # Services
 # ============================================================
-local_resource(
+dc_resource(
     'server',
-    cmd='./scripts/kill-port.sh 8080',
-    serve_cmd=str(local('go env GOPATH', quiet=True)).strip() + '/bin/air',
-    serve_dir='services/server',
-    serve_env={
-        'DATABASE_URL': 'postgres://postgres:postgres@localhost:6432/app?sslmode=disable',
-        'CLICKHOUSE_URL': 'clickhouse://localhost:9000/default',
-        'JWT_SECRET': os.environ.get('JWT_SECRET', ''),
-    },
-    deps=['services/server/cmd', 'services/server/api', 'services/server/repository', 'services/server/model'],
-    resource_deps=['db-migrate', 'ch-migrate', 'pgbouncer'],
     labels=['services'],
-    readiness_probe=probe(
-        period_secs=5,
-        http_get=http_get_action(port=8080, path='/health'),
-    ),
+    resource_deps=['db-migrate', 'ch-migrate', 'pgbouncer'],
 )

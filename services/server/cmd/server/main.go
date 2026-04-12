@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	ginprometheus "github.com/zsais/go-gin-prometheus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -72,9 +73,18 @@ func main() {
 		return c.FullPath()
 	}
 
+	// --- Metrics server (separate port so /metrics bypasses OpenAPI validation) ---
+	go func() {
+		mux := http.NewServeMux()
+		mux.Handle("/metrics", promhttp.Handler())
+		log.Println("Metrics listening on :9091")
+		if err := http.ListenAndServe(":9091", mux); err != nil {
+			log.Fatalf("metrics server error: %v", err)
+		}
+	}()
+
 	// --- Router ---
 	router := internalserver.NewRouter(db, chDB, jwtSecret, p.HandlerFunc())
-	p.SetMetricsPath(router)
 
 	srv := &http.Server{
 		Addr:    ":8080",

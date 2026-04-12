@@ -54,6 +54,11 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1g
     restart: unless-stopped
     networks:
       - lab-network
@@ -147,6 +152,39 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+    networks:
+      - lab-network
+
+  server:
+    build:
+      context: ../services/server
+      dockerfile: Dockerfile
+    container_name: server
+    ports:
+      - "8080:8080"
+      - "9091:9091"
+    env_file:
+      - ../services/server/.env
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@pgbouncer:5432/${POSTGRES_DB:-app}?sslmode=disable
+      CLICKHOUSE_URL: clickhouse://${CLICKHOUSE_USER:-default}:${CLICKHOUSE_PASSWORD:-}@clickhouse:9000/${CLICKHOUSE_DB:-default}
+    depends_on:
+      pgbouncer:
+        condition: service_started
+      clickhouse:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1g
     restart: unless-stopped
     networks:
       - lab-network
