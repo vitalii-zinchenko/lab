@@ -47,3 +47,15 @@ components:
           format: date-time
         operation:
           type: string
+
+    UsagePage:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "./spec_schemas.yaml#/components/schemas/UsageItem"
+        next_cursor:
+          type: string
+          nullable: true

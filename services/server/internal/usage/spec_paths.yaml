@@ -26,7 +26,54 @@ paths:
     get:
       tags: [Usage]
       operationId: GetUsage
-      summary: Get API usage statistics for the authenticated user
+      summary: Get paginated raw usage records for the authenticated user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 100
+            minimum: 1
+            maximum: 1000
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Cursor-paginated raw usage records
+          content:
+            application/json:
+              schema:
+                $ref: "./spec_schemas.yaml#/components/schemas/UsagePage"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "../shared/spec_schemas.yaml#/components/schemas/Error"
+
+  /usage/stats:
+    get:
+      tags: [Usage]
+      operationId: GetUsageStats
+      summary: Get daily usage aggregates for the authenticated user
       security:
         - bearerAuth: []
       parameters:

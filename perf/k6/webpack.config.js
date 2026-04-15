@@ -3,10 +3,12 @@ const path = require('path');
 module.exports = {
   mode: 'production',
   entry: {
-    smoke:  './src/smoke.ts',
-    load:   './src/load.ts',
-    stress:        './src/stress.ts',
-    'insert-usage': './src/insert-usage.ts',
+    smoke:          './src/smoke.ts',
+    load:           './src/load.ts',
+    stress:         './src/stress.ts',
+    'insert-usage':    './src/insert-usage.ts',
+    'get-usage':       './src/get-usage.ts',
+    'get-usage-stats': './src/get-usage-stats.ts',
   },
   output: {
     path: path.resolve(__dirname, 'dist'),

@@ -324,6 +324,24 @@
         ],
         "type": "object"
       },
+      "UsagePage": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/UsageItem"
+            },
+            "type": "array"
+          },
+          "next_cursor": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
       "UsageStats": {
         "properties": {
           "data": {
@@ -801,6 +819,23 @@
               "format": "date-time",
               "type": "string"
             }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 100,
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -808,11 +843,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UsageStats"
+                  "$ref": "#/components/schemas/UsagePage"
                 }
               }
             },
-            "description": "Daily call counts grouped by day"
+            "description": "Cursor-paginated raw usage records"
           },
           "401": {
             "content": {
@@ -830,7 +865,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Get API usage statistics for the authenticated user",
+        "summary": "Get paginated raw usage records for the authenticated user",
         "tags": [
           "Usage"
         ]
@@ -870,6 +905,62 @@
           }
         },
         "summary": "Ingest a single usage record",
+        "tags": [
+          "Usage"
+        ]
+      }
+    },
+    "/usage/stats": {
+      "get": {
+        "operationId": "GetUsageStats",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "from",
+            "required": true,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": true,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageStats"
+                }
+              }
+            },
+            "description": "Daily call counts grouped by day"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get daily usage aggregates for the authenticated user",
         "tags": [
           "Usage"
         ]

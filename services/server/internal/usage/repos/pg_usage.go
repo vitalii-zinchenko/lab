@@ -23,6 +23,21 @@ func (r *pgUsageRepository) Record(ctx context.Context, entry *models.Usage) err
 	return r.q.Usage.WithContext(ctx).Create(entry)
 }
 
+func (r *pgUsageRepository) ListRecords(ctx context.Context, userID int64, from, to time.Time, afterTimestamp *time.Time, afterID int64, limit int) ([]models.Usage, error) {
+	db := r.q.Usage.WithContext(ctx).UnderlyingDB()
+	q := db.Where("user_id = ? AND timestamp >= ? AND timestamp < ?", userID, from, to)
+	if afterTimestamp != nil {
+		q = q.Where("(timestamp, id) > (?, ?)", afterTimestamp, afterID)
+	}
+	q = q.Order("timestamp ASC, id ASC").Limit(limit)
+
+	var rows []models.Usage
+	if err := q.Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	return rows, nil
+}
+
 func (r *pgUsageRepository) GetDailyStats(ctx context.Context, userID int64, from, to time.Time) ([]models.DailyStats, error) {
 	var stats []models.DailyStats
 	err := r.q.Usage.WithContext(ctx).UnderlyingDB().

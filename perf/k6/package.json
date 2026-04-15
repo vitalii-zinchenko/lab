@@ -7,7 +7,9 @@
     "smoke": "webpack && k6 run dist/smoke.js",
     "load": "webpack && k6 run dist/load.js",
     "stress": "webpack && k6 run dist/stress.js",
-    "insert-usage": "webpack && k6 run dist/insert-usage.js"
+    "insert-usage":    "webpack && k6 run dist/insert-usage.js",
+    "get-usage":       "webpack && k6 run dist/get-usage.js",
+    "get-usage-stats": "webpack && k6 run dist/get-usage-stats.js"
   },
   "devDependencies": {
     "@types/k6": "^1.6.0",

@@ -1,4 +1,4 @@
-.PHONY: infra-up infra-down db-migrate-up server-up server-down perf-install perf-smoke perf-load perf-stress dashboards dashboards-renderer deploy-dashboards tilt-setup app test
+.PHONY: infra-up infra-down db-migrate-up server-up server-down perf-install perf-smoke perf-load perf-stress perf-insert-usage perf-get-usage perf-get-usage-stats dashboards dashboards-renderer deploy-dashboards tilt-setup app test mock-data mock-data-fill mock-data-reindex mock-create-api-keys generate
 
 POSTGRES_USER             ?= postgres
 POSTGRES_PASSWORD         ?= postgres
@@ -95,5 +95,51 @@ perf-load:
 perf-stress:
 	cd perf/k6 && npx webpack && k6 run dist/stress.js -e BASE_URL=$(BASE_URL)
 
+perf-insert-usage:
+	cd perf/k6 && npx webpack && k6 run dist/insert-usage.js -e BASE_URL=$(BASE_URL)
+
+perf-get-usage:
+	cd perf/k6 && npx webpack && k6 run dist/get-usage.js -e BASE_URL=$(BASE_URL)
+
+perf-get-usage-stats:
+	cd perf/k6 && npx webpack && k6 run dist/get-usage-stats.js -e BASE_URL=$(BASE_URL)
+
+generate:
+	cd services/server && go generate ./...
+
 test:
 	cd services/server && go test -v -timeout 120s ./internal/...
+
+# Mock data — pass any subcommand and flags via CMD:
+#   make mock-data CMD="fill --workers 4"
+#   make mock-data CMD="fill --target 500000000 --workers 8"
+#   make mock-data CMD="reindex --work-mem 2GB"
+# Shortcut targets with sensible defaults:
+#   make mock-data-fill   [TARGET=1000000000] [MOCK_USERS=1000] [MOCK_BATCH=100000]
+#   make mock-data-reindex
+TARGET ?= 1000000000
+MOCK_USERS ?= 1000
+MOCK_BATCH ?= 100000
+CMD ?= fill --target $(TARGET) --users $(MOCK_USERS) --batch $(MOCK_BATCH)
+
+mock-data:
+	cd perf/mock-data && \
+		DATABASE_URL="$(DATABASE_URL_DIRECT)" \
+		go run . $(CMD)
+
+mock-data-fill:
+	cd perf/mock-data && \
+		DATABASE_URL="$(DATABASE_URL_DIRECT)" \
+		go run . fill --target $(TARGET) --users $(MOCK_USERS) --batch $(MOCK_BATCH)
+
+mock-data-reindex:
+	cd perf/mock-data && \
+		DATABASE_URL="$(DATABASE_URL_DIRECT)" \
+		go run . reindex
+
+# Creates one API key per mock user and writes perf/mock-data/users-credentials.json.
+# Idempotent: re-run safely to refresh the file without recreating existing keys.
+mock-create-api-keys:
+	cd perf/mock-data && \
+		DATABASE_URL="$(DATABASE_URL_DIRECT)" \
+		go run . create-api-keys --out users-credentials.json
