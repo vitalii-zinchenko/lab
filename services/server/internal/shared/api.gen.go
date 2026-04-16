@@ -118,6 +118,12 @@ type Item struct {
 	Name        string             `json:"name"`
 }
 
+// LoginRequest defines model for LoginRequest.
+type LoginRequest struct {
+	Email    openapi_types.Email `json:"email"`
+	Password string              `json:"password"`
+}
+
 // NewApiKey defines model for NewApiKey.
 type NewApiKey struct {
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
@@ -226,6 +232,9 @@ type CreateEventJSONRequestBody = NewEvent
 // CreateItemJSONRequestBody defines body for CreateItem for application/json ContentType.
 type CreateItemJSONRequestBody = NewItem
 
+// LoginJSONRequestBody defines body for Login for application/json ContentType.
+type LoginJSONRequestBody = LoginRequest
+
 // CreateTokenJSONRequestBody defines body for CreateToken for application/json ContentType.
 type CreateTokenJSONRequestBody = TokenRequest
 
@@ -267,6 +276,9 @@ type ServerInterface interface {
 	// Get an item by ID
 	// (GET /items/{id})
 	GetItem(c *gin.Context, id openapi_types.UUID)
+	// Login with email and password to get a JWT access token
+	// (POST /login)
+	Login(c *gin.Context)
 	// Exchange client credentials for a JWT access token
 	// (POST /token)
 	CreateToken(c *gin.Context)
@@ -473,6 +485,19 @@ func (siw *ServerInterfaceWrapper) GetItem(c *gin.Context) {
 	siw.Handler.GetItem(c, id)
 }
 
+// Login operation middleware
+func (siw *ServerInterfaceWrapper) Login(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.Login(c)
+}
+
 // CreateToken operation middleware
 func (siw *ServerInterfaceWrapper) CreateToken(c *gin.Context) {
 
@@ -665,6 +690,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/items", wrapper.CreateItem)
 	router.DELETE(options.BaseURL+"/items/:id", wrapper.DeleteItem)
 	router.GET(options.BaseURL+"/items/:id", wrapper.GetItem)
+	router.POST(options.BaseURL+"/login", wrapper.Login)
 	router.POST(options.BaseURL+"/token", wrapper.CreateToken)
 	router.GET(options.BaseURL+"/usage", wrapper.GetUsage)
 	router.POST(options.BaseURL+"/usage", wrapper.CreateUsage)
@@ -892,6 +918,41 @@ func (response GetItem404JSONResponse) VisitGetItemResponse(w http.ResponseWrite
 	return json.NewEncoder(w).Encode(response)
 }
 
+type LoginRequestObject struct {
+	Body *LoginJSONRequestBody
+}
+
+type LoginResponseObject interface {
+	VisitLoginResponse(w http.ResponseWriter) error
+}
+
+type Login200JSONResponse TokenResponse
+
+func (response Login200JSONResponse) VisitLoginResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type Login400JSONResponse Error
+
+func (response Login400JSONResponse) VisitLoginResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type Login401JSONResponse Error
+
+func (response Login401JSONResponse) VisitLoginResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type CreateTokenRequestObject struct {
 	Body *CreateTokenJSONRequestBody
 }
@@ -1063,6 +1124,9 @@ type StrictServerInterface interface {
 	// Get an item by ID
 	// (GET /items/{id})
 	GetItem(ctx context.Context, request GetItemRequestObject) (GetItemResponseObject, error)
+	// Login with email and password to get a JWT access token
+	// (POST /login)
+	Login(ctx context.Context, request LoginRequestObject) (LoginResponseObject, error)
 	// Exchange client credentials for a JWT access token
 	// (POST /token)
 	CreateToken(ctx context.Context, request CreateTokenRequestObject) (CreateTokenResponseObject, error)
@@ -1382,6 +1446,39 @@ func (sh *strictHandler) GetItem(ctx *gin.Context, id openapi_types.UUID) {
 	}
 }
 
+// Login operation middleware
+func (sh *strictHandler) Login(ctx *gin.Context) {
+	var request LoginRequestObject
+
+	var body LoginJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.Login(ctx, request.(LoginRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "Login")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(LoginResponseObject); ok {
+		if err := validResponse.VisitLoginResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // CreateToken operation middleware
 func (sh *strictHandler) CreateToken(ctx *gin.Context) {
 	var request CreateTokenRequestObject
@@ -1538,35 +1635,37 @@ func (sh *strictHandler) CreateUser(ctx *gin.Context) {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"zM/ikagtAAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

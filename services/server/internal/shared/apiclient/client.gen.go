@@ -113,6 +113,12 @@ type Item struct {
 	Name        string             `json:"name"`
 }
 
+// LoginRequest defines model for LoginRequest.
+type LoginRequest struct {
+	Email    openapi_types.Email `json:"email"`
+	Password string              `json:"password"`
+}
+
 // NewApiKey defines model for NewApiKey.
 type NewApiKey struct {
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
@@ -171,6 +177,12 @@ type UsageItem struct {
 	UserId    int64     `json:"user_id"`
 }
 
+// UsagePage defines model for UsagePage.
+type UsagePage struct {
+	Data       []UsageItem `json:"data"`
+	NextCursor *string     `json:"next_cursor,omitempty"`
+}
+
 // UsageStats defines model for UsageStats.
 type UsageStats struct {
 	Data []DailyUsage `json:"data"`
@@ -191,6 +203,14 @@ type ListItemsParams struct {
 
 // GetUsageParams defines parameters for GetUsage.
 type GetUsageParams struct {
+	From   time.Time `form:"from" json:"from"`
+	To     time.Time `form:"to" json:"to"`
+	Limit  *int      `form:"limit,omitempty" json:"limit,omitempty"`
+	Cursor *string   `form:"cursor,omitempty" json:"cursor,omitempty"`
+}
+
+// GetUsageStatsParams defines parameters for GetUsageStats.
+type GetUsageStatsParams struct {
 	From time.Time `form:"from" json:"from"`
 	To   time.Time `form:"to" json:"to"`
 }
@@ -206,6 +226,9 @@ type CreateEventJSONRequestBody = NewEvent
 
 // CreateItemJSONRequestBody defines body for CreateItem for application/json ContentType.
 type CreateItemJSONRequestBody = NewItem
+
+// LoginJSONRequestBody defines body for Login for application/json ContentType.
+type LoginJSONRequestBody = LoginRequest
 
 // CreateTokenJSONRequestBody defines body for CreateToken for application/json ContentType.
 type CreateTokenJSONRequestBody = TokenRequest
@@ -327,6 +350,11 @@ type ClientInterface interface {
 	// GetItem request
 	GetItem(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// LoginWithBody request with any body
+	LoginWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	Login(ctx context.Context, body LoginJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateTokenWithBody request with any body
 	CreateTokenWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -339,6 +367,9 @@ type ClientInterface interface {
 	CreateUsageWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CreateUsage(ctx context.Context, body CreateUsageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetUsageStats request
+	GetUsageStats(ctx context.Context, params *GetUsageStatsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateUserWithBody request with any body
 	CreateUserWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -514,6 +545,30 @@ func (c *Client) GetItem(ctx context.Context, id openapi_types.UUID, reqEditors 
 	return c.Client.Do(req)
 }
 
+func (c *Client) LoginWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLoginRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) Login(ctx context.Context, body LoginJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLoginRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) CreateTokenWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateTokenRequestWithBody(c.Server, contentType, body)
 	if err != nil {
@@ -564,6 +619,18 @@ func (c *Client) CreateUsageWithBody(ctx context.Context, contentType string, bo
 
 func (c *Client) CreateUsage(ctx context.Context, body CreateUsageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateUsageRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetUsageStats(ctx context.Context, params *GetUsageStatsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetUsageStatsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -963,6 +1030,46 @@ func NewGetItemRequest(server string, id openapi_types.UUID) (*http.Request, err
 	return req, nil
 }
 
+// NewLoginRequest calls the generic Login builder with application/json body
+func NewLoginRequest(server string, body LoginJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewLoginRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewLoginRequestWithBody generates requests for Login with any type of body
+func NewLoginRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/login")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateTokenRequest calls the generic CreateToken builder with application/json body
 func NewCreateTokenRequest(server string, body CreateTokenJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -1049,6 +1156,38 @@ func NewGetUsageRequest(server string, params *GetUsageParams) (*http.Request, e
 			}
 		}
 
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		queryURL.RawQuery = queryValues.Encode()
 	}
 
@@ -1096,6 +1235,63 @@ func NewCreateUsageRequestWithBody(server string, contentType string, body io.Re
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetUsageStatsRequest generates requests for GetUsageStats
+func NewGetUsageStatsRequest(server string, params *GetUsageStatsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/usage/stats")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "from", params.From, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date-time"}); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "to", params.To, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date-time"}); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -1221,6 +1417,11 @@ type ClientWithResponsesInterface interface {
 	// GetItemWithResponse request
 	GetItemWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetItemResponse, error)
 
+	// LoginWithBodyWithResponse request with any body
+	LoginWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LoginResponse, error)
+
+	LoginWithResponse(ctx context.Context, body LoginJSONRequestBody, reqEditors ...RequestEditorFn) (*LoginResponse, error)
+
 	// CreateTokenWithBodyWithResponse request with any body
 	CreateTokenWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateTokenResponse, error)
 
@@ -1233,6 +1434,9 @@ type ClientWithResponsesInterface interface {
 	CreateUsageWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUsageResponse, error)
 
 	CreateUsageWithResponse(ctx context.Context, body CreateUsageJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateUsageResponse, error)
+
+	// GetUsageStatsWithResponse request
+	GetUsageStatsWithResponse(ctx context.Context, params *GetUsageStatsParams, reqEditors ...RequestEditorFn) (*GetUsageStatsResponse, error)
 
 	// CreateUserWithBodyWithResponse request with any body
 	CreateUserWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUserResponse, error)
@@ -1464,6 +1668,30 @@ func (r GetItemResponse) StatusCode() int {
 	return 0
 }
 
+type LoginResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *TokenResponse
+	JSON400      *Error
+	JSON401      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r LoginResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r LoginResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateTokenResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -1491,7 +1719,7 @@ func (r CreateTokenResponse) StatusCode() int {
 type GetUsageResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *UsageStats
+	JSON200      *UsagePage
 	JSON401      *Error
 }
 
@@ -1528,6 +1756,29 @@ func (r CreateUsageResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreateUsageResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetUsageStatsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *UsageStats
+	JSON401      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetUsageStatsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetUsageStatsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1679,6 +1930,23 @@ func (c *ClientWithResponses) GetItemWithResponse(ctx context.Context, id openap
 	return ParseGetItemResponse(rsp)
 }
 
+// LoginWithBodyWithResponse request with arbitrary body returning *LoginResponse
+func (c *ClientWithResponses) LoginWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LoginResponse, error) {
+	rsp, err := c.LoginWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLoginResponse(rsp)
+}
+
+func (c *ClientWithResponses) LoginWithResponse(ctx context.Context, body LoginJSONRequestBody, reqEditors ...RequestEditorFn) (*LoginResponse, error) {
+	rsp, err := c.Login(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLoginResponse(rsp)
+}
+
 // CreateTokenWithBodyWithResponse request with arbitrary body returning *CreateTokenResponse
 func (c *ClientWithResponses) CreateTokenWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateTokenResponse, error) {
 	rsp, err := c.CreateTokenWithBody(ctx, contentType, body, reqEditors...)
@@ -1720,6 +1988,15 @@ func (c *ClientWithResponses) CreateUsageWithResponse(ctx context.Context, body 
 		return nil, err
 	}
 	return ParseCreateUsageResponse(rsp)
+}
+
+// GetUsageStatsWithResponse request returning *GetUsageStatsResponse
+func (c *ClientWithResponses) GetUsageStatsWithResponse(ctx context.Context, params *GetUsageStatsParams, reqEditors ...RequestEditorFn) (*GetUsageStatsResponse, error) {
+	rsp, err := c.GetUsageStats(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetUsageStatsResponse(rsp)
 }
 
 // CreateUserWithBodyWithResponse request with arbitrary body returning *CreateUserResponse
@@ -2027,6 +2304,46 @@ func ParseGetItemResponse(rsp *http.Response) (*GetItemResponse, error) {
 	return response, nil
 }
 
+// ParseLoginResponse parses an HTTP response from a LoginWithResponse call
+func ParseLoginResponse(rsp *http.Response) (*LoginResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &LoginResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TokenResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseCreateTokenResponse parses an HTTP response from a CreateTokenWithResponse call
 func ParseCreateTokenResponse(rsp *http.Response) (*CreateTokenResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -2082,7 +2399,7 @@ func ParseGetUsageResponse(rsp *http.Response) (*GetUsageResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest UsageStats
+		var dest UsagePage
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2127,6 +2444,39 @@ func ParseCreateUsageResponse(rsp *http.Response) (*CreateUsageResponse, error) 
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetUsageStatsResponse parses an HTTP response from a GetUsageStatsWithResponse call
+func ParseGetUsageStatsResponse(rsp *http.Response) (*GetUsageStatsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetUsageStatsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest UsageStats
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	}
 

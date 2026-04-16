@@ -159,6 +159,23 @@
         ],
         "type": "object"
       },
+      "LoginRequest": {
+        "properties": {
+          "email": {
+            "format": "email",
+            "type": "string"
+          },
+          "password": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "type": "object"
+      },
       "NewApiKey": {
         "properties": {
           "expires_at": {
@@ -744,6 +761,57 @@
         "summary": "Get an item by ID",
         "tags": [
           "Items"
+        ]
+      }
+    },
+    "/login": {
+      "post": {
+        "operationId": "Login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Missing or invalid fields"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid email or password"
+          }
+        },
+        "summary": "Login with email and password to get a JWT access token",
+        "tags": [
+          "Auth"
         ]
       }
     },

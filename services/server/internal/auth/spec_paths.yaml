@@ -1,4 +1,35 @@
 paths:
+  /login:
+    post:
+      tags: [Auth]
+      operationId: Login
+      summary: Login with email and password to get a JWT access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./spec_schemas.yaml#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./spec_schemas.yaml#/components/schemas/TokenResponse"
+        "400":
+          description: Missing or invalid fields
+          content:
+            application/json:
+              schema:
+                $ref: "../shared/spec_schemas.yaml#/components/schemas/Error"
+        "401":
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                $ref: "../shared/spec_schemas.yaml#/components/schemas/Error"
+
   /users:
     post:
       tags: [Auth]

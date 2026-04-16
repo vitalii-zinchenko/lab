@@ -29,6 +29,9 @@ paths:
   /ch-events:
     $ref: "../../internal/events/spec_paths.yaml#/paths/~1ch-events"
 
+  /login:
+    $ref: "../../internal/auth/spec_paths.yaml#/paths/~1login"
+
   /users:
     $ref: "../../internal/auth/spec_paths.yaml#/paths/~1users"
 

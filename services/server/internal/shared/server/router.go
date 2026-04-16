@@ -31,6 +31,7 @@ type appHandler struct {
 	*authhandlers.TokenHandler
 	*authhandlers.ApiKeysHandler
 	*authhandlers.UsersHandler
+	*authhandlers.LoginHandler
 	*usagehandlers.UsageHandler
 }
 
@@ -75,6 +76,7 @@ func NewRouter(db *gorm.DB, chDB *sql.DB, jwtSecret []byte, pre ...gin.HandlerFu
 		TokenHandler:    authhandlers.NewTokenHandler(apiKeyRepo, jwtSecret),
 		ApiKeysHandler:  authhandlers.NewApiKeysHandler(apiKeyRepo),
 		UsersHandler:    authhandlers.NewUsersHandler(userRepo),
+		LoginHandler:    authhandlers.NewLoginHandler(userRepo, jwtSecret),
 		UsageHandler:    usagehandlers.NewUsageHandler(usageRepo),
 	}
 

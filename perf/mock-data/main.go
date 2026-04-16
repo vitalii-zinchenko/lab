@@ -340,13 +340,16 @@ func runWorker(
 // userCredential is one entry in the output JSON file.
 type userCredential struct {
 	UserID       int64  `json:"user_id"`
+	Email        string `json:"email"`
+	Password     string `json:"password"`
 	ClientID     string `json:"client_id"`
 	ClientSecret string `json:"client_secret"`
 }
 
 // createApiKeys ensures every mock user has exactly one non-revoked API key
-// named "mock_key". Existing keys are reused when the output file already
-// records their secret; otherwise the key is deleted and recreated.
+// named "mock_key" and a password stored in password_hash. Existing keys and
+// passwords are reused when the output file already records them; otherwise
+// they are recreated. The full credentials list is written to --out on success.
 func createApiKeys(ctx context.Context, pool *pgxpool.Pool, outPath string) error {
 	existing := map[int64]userCredential{}
 	if data, err := os.ReadFile(outPath); err == nil {
@@ -358,52 +361,88 @@ func createApiKeys(ctx context.Context, pool *pgxpool.Pool, outPath string) erro
 		}
 	}
 
+	type userRow struct {
+		ID    int64
+		Email string
+	}
 	rows, err := pool.Query(ctx,
-		`SELECT id FROM users WHERE username LIKE $1 ORDER BY id`,
+		`SELECT id, email FROM users WHERE username LIKE $1 ORDER BY id`,
 		usernamePrefix+"%",
 	)
 	if err != nil {
 		return fmt.Errorf("query users: %w", err)
 	}
-	userIDs, err := pgx.CollectRows(rows, pgx.RowTo[int64])
+	users, err := pgx.CollectRows(rows, pgx.RowToStructByPos[userRow])
 	if err != nil {
-		return fmt.Errorf("collect user ids: %w", err)
+		return fmt.Errorf("collect users: %w", err)
 	}
-	log.Printf("found %d mock users", len(userIDs))
+	log.Printf("found %d mock users", len(users))
 
-	result := make([]userCredential, 0, len(userIDs))
+	result := make([]userCredential, 0, len(users))
 
-	for _, userID := range userIDs {
+	for _, u := range users {
+		cred := userCredential{UserID: u.ID, Email: u.Email}
+
+		// ---- password ----
+		var hasPassword bool
+		pool.QueryRow(ctx,
+			`SELECT password_hash IS NOT NULL FROM users WHERE id = $1`,
+			u.ID,
+		).Scan(&hasPassword)
+
+		if prev, ok := existing[u.ID]; ok && prev.Password != "" && hasPassword {
+			cred.Password = prev.Password
+		} else {
+			rawPassword, err := generateSecret()
+			if err != nil {
+				return fmt.Errorf("generate password for user %d: %w", u.ID, err)
+			}
+			hash, err := bcrypt.GenerateFromPassword([]byte(rawPassword), bcrypt.DefaultCost)
+			if err != nil {
+				return fmt.Errorf("hash password for user %d: %w", u.ID, err)
+			}
+			if _, err := pool.Exec(ctx,
+				`UPDATE users SET password_hash = $1 WHERE id = $2`,
+				string(hash), u.ID,
+			); err != nil {
+				return fmt.Errorf("update password_hash for user %d: %w", u.ID, err)
+			}
+			cred.Password = rawPassword
+		}
+
+		// ---- api key ----
 		var dbClientID string
-		err := pool.QueryRow(ctx,
+		keyErr := pool.QueryRow(ctx,
 			`SELECT client_id FROM api_keys
 			 WHERE user_id = $1 AND name = 'mock_key' AND revoked_at IS NULL
 			 LIMIT 1`,
-			userID,
+			u.ID,
 		).Scan(&dbClientID)
 
-		keyExists := err == nil
+		keyExists := keyErr == nil
 
 		if keyExists {
-			if c, ok := existing[userID]; ok && c.ClientID == dbClientID {
-				result = append(result, c)
+			if prev, ok := existing[u.ID]; ok && prev.ClientID == dbClientID {
+				cred.ClientID = prev.ClientID
+				cred.ClientSecret = prev.ClientSecret
+				result = append(result, cred)
 				continue
 			}
 			if _, err := pool.Exec(ctx,
 				`DELETE FROM api_keys WHERE user_id = $1 AND name = 'mock_key'`,
-				userID,
+				u.ID,
 			); err != nil {
-				return fmt.Errorf("delete stale key for user %d: %w", userID, err)
+				return fmt.Errorf("delete stale key for user %d: %w", u.ID, err)
 			}
 		}
 
 		rawSecret, err := generateSecret()
 		if err != nil {
-			return fmt.Errorf("generate secret for user %d: %w", userID, err)
+			return fmt.Errorf("generate secret for user %d: %w", u.ID, err)
 		}
 		hash, err := bcrypt.GenerateFromPassword([]byte(rawSecret), bcrypt.DefaultCost)
 		if err != nil {
-			return fmt.Errorf("hash secret for user %d: %w", userID, err)
+			return fmt.Errorf("hash secret for user %d: %w", u.ID, err)
 		}
 
 		clientID := uuid.New()
@@ -412,16 +451,14 @@ func createApiKeys(ctx context.Context, pool *pgxpool.Pool, outPath string) erro
 		if _, err := pool.Exec(ctx,
 			`INSERT INTO api_keys (id, user_id, client_id, client_secret_hash, name, created_at)
 			 VALUES ($1, $2, $3, $4, $5, $6)`,
-			uuid.New(), userID, clientID, string(hash), keyName, now,
+			uuid.New(), u.ID, clientID, string(hash), keyName, now,
 		); err != nil {
-			return fmt.Errorf("insert api key for user %d: %w", userID, err)
+			return fmt.Errorf("insert api key for user %d: %w", u.ID, err)
 		}
 
-		result = append(result, userCredential{
-			UserID:       userID,
-			ClientID:     clientID.String(),
-			ClientSecret: rawSecret,
-		})
+		cred.ClientID = clientID.String()
+		cred.ClientSecret = rawSecret
+		result = append(result, cred)
 	}
 
 	out, err := json.MarshalIndent(result, "", "  ")

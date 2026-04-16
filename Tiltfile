@@ -11,7 +11,15 @@ allow_k8s_contexts(k8s_context())
 # ============================================================
 # Images
 # ============================================================
-docker_build('infra_server', 'services/server')
+docker_build(
+    'infra_server',
+    'services/server',
+    live_update=[
+        sync('services/server', '/app'),
+        run('cd /app && go build -o ./server ./cmd/server'),
+        restart_container(),
+    ],
+)
 
 # ============================================================
 # Infrastructure (Docker Compose)
@@ -67,4 +75,13 @@ dc_resource(
     'server',
     labels=['services'],
     resource_deps=['db-migrate', 'ch-migrate', 'pgbouncer'],
+)
+
+local_resource(
+    'ui',
+    serve_cmd='arch -arm64 npm --prefix services/ui run dev',
+    deps=['services/ui/src', 'services/ui/vite.config.ts'],
+    resource_deps=['server'],
+    labels=['services'],
+    links=[link('http://localhost:5173', 'UI')],
 )
