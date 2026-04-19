@@ -15,11 +15,13 @@ import (
 	"time"
 
 	_ "github.com/ClickHouse/clickhouse-go/v2"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/pressly/goose/v3"
 	tcclickhouse "github.com/testcontainers/testcontainers-go/modules/clickhouse"
 	tcpostgres "github.com/testcontainers/testcontainers-go/modules/postgres"
+	"go.uber.org/fx"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
@@ -114,7 +116,22 @@ func NewFixture(ctx context.Context) (*Fixture, error) {
 	}
 
 	// --- Server ---
-	router := internalserver.NewRouter(db, chDB, f.JWTSecret)
+	// Use the same AppModule as production. Infrastructure dependencies
+	// (DB, ClickHouse, JWT secret) are provided as inline values so fx
+	// wires everything identically to how it runs in production.
+	var router *gin.Engine
+	app := fx.New(
+		internalserver.AppModule,
+		fx.Provide(func() *gorm.DB { return db }),
+		fx.Provide(func() *sql.DB { return chDB }),
+		fx.Provide(func() []byte { return f.JWTSecret }),
+		fx.Populate(&router),
+		fx.NopLogger,
+	)
+	if err := app.Start(context.Background()); err != nil {
+		return nil, fmt.Errorf("start di container: %w", err)
+	}
+	f.cleanup = append(f.cleanup, func() { _ = app.Stop(context.Background()) })
 	f.Server = httptest.NewServer(router)
 	f.cleanup = append(f.cleanup, f.Server.Close)
 

@@ -9,14 +9,12 @@ import (
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/gin-gonic/gin"
 	ginmiddleware "github.com/oapi-codegen/gin-middleware"
+	"go.uber.org/fx"
 	"gorm.io/gorm"
 
 	authhandlers "github.com/vitaliizinchenko/lab/internal/auth/handlers"
-	authrepos "github.com/vitaliizinchenko/lab/internal/auth/repos"
 	eventhandlers "github.com/vitaliizinchenko/lab/internal/events/handlers"
-	eventrepos "github.com/vitaliizinchenko/lab/internal/events/repos"
 	itemhandlers "github.com/vitaliizinchenko/lab/internal/items/handlers"
-	itemrepos "github.com/vitaliizinchenko/lab/internal/items/repos"
 	"github.com/vitaliizinchenko/lab/internal/shared"
 	usagehandlers "github.com/vitaliizinchenko/lab/internal/usage/handlers"
 	usagerepos "github.com/vitaliizinchenko/lab/internal/usage/repos"
@@ -35,10 +33,36 @@ type appHandler struct {
 	*usagehandlers.UsageHandler
 }
 
-// NewRouter builds a configured Gin engine with OpenAPI validation, auth middleware, and all
-// route handlers registered. Optional pre middleware (e.g. Prometheus) is prepended so it
-// runs before the standard stack.
-func NewRouter(db *gorm.DB, chDB *sql.DB, jwtSecret []byte, pre ...gin.HandlerFunc) *gin.Engine {
+// RouterParams holds all dependencies required to build the router.
+// fx resolves and injects each field automatically.
+type RouterParams struct {
+	fx.In
+
+	DB        *gorm.DB
+	ChDB      *sql.DB
+	JWTSecret []byte
+
+	// PrometheusMiddleware is the Gin handler for Prometheus metrics collection.
+	// It is named to avoid ambiguity with any other gin.HandlerFunc providers.
+	PrometheusMiddleware gin.HandlerFunc `name:"prometheus"`
+
+	ItemsHandler    *itemhandlers.ItemsHandler
+	EventsHandler   *eventhandlers.EventsHandler
+	ChEventsHandler *eventhandlers.ChEventsHandler
+	TokenHandler    *authhandlers.TokenHandler
+	ApiKeysHandler  *authhandlers.ApiKeysHandler
+	UsersHandler    *authhandlers.UsersHandler
+	LoginHandler    *authhandlers.LoginHandler
+	UsageHandler    *usagehandlers.UsageHandler
+
+	// UsageRepo is injected separately because UsageTrackingMiddleware needs it
+	// directly, independently of UsageHandler.
+	UsageRepo usagerepos.UsageRepository
+}
+
+// NewRouter builds a configured Gin engine with OpenAPI validation, auth middleware,
+// and all route handlers registered.
+func NewRouter(p RouterParams) *gin.Engine {
 	swagger, err := shared.GetSwagger()
 	if err != nil {
 		panic(fmt.Sprintf("failed to load swagger spec: %v", err))
@@ -47,10 +71,10 @@ func NewRouter(db *gorm.DB, chDB *sql.DB, jwtSecret []byte, pre ...gin.HandlerFu
 
 	router := gin.New()
 	router.ContextWithFallback = true
-	router.Use(pre...)
+	router.Use(p.PrometheusMiddleware)
 	router.Use(ginmiddleware.OapiRequestValidatorWithOptions(swagger, &ginmiddleware.Options{
 		Options: openapi3filter.Options{
-			AuthenticationFunc: authhandlers.NewAuthenticationFunc(jwtSecret),
+			AuthenticationFunc: authhandlers.NewAuthenticationFunc(p.JWTSecret),
 		},
 		ErrorHandler: func(c *gin.Context, message string, statusCode int) {
 			if strings.Contains(message, "SecurityRequirementsError") {
@@ -61,27 +85,20 @@ func NewRouter(db *gorm.DB, chDB *sql.DB, jwtSecret []byte, pre ...gin.HandlerFu
 		},
 	}))
 
-	itemRepo := itemrepos.NewItemRepository(db)
-	eventRepo := eventrepos.NewEventHistoryRepository(db)
-	userRepo := authrepos.NewUserRepository(db)
-	apiKeyRepo := authrepos.NewApiKeyRepository(db)
-	chEventRepo := eventrepos.NewChEventRepository(chDB)
-	usageRepo := usagerepos.NewPostgresUsageRepository(db)
-
 	h := &appHandler{
 		healthHandler:   &healthHandler{},
-		ItemsHandler:    itemhandlers.NewItemsHandler(itemRepo),
-		EventsHandler:   eventhandlers.NewEventsHandler(eventRepo),
-		ChEventsHandler: eventhandlers.NewChEventsHandler(chEventRepo),
-		TokenHandler:    authhandlers.NewTokenHandler(apiKeyRepo, jwtSecret),
-		ApiKeysHandler:  authhandlers.NewApiKeysHandler(apiKeyRepo),
-		UsersHandler:    authhandlers.NewUsersHandler(userRepo),
-		LoginHandler:    authhandlers.NewLoginHandler(userRepo, jwtSecret),
-		UsageHandler:    usagehandlers.NewUsageHandler(usageRepo),
+		ItemsHandler:    p.ItemsHandler,
+		EventsHandler:   p.EventsHandler,
+		ChEventsHandler: p.ChEventsHandler,
+		TokenHandler:    p.TokenHandler,
+		ApiKeysHandler:  p.ApiKeysHandler,
+		UsersHandler:    p.UsersHandler,
+		LoginHandler:    p.LoginHandler,
+		UsageHandler:    p.UsageHandler,
 	}
 
 	strictHandler := shared.NewStrictHandler(h, []shared.StrictMiddlewareFunc{
-		usagehandlers.UsageTrackingMiddleware(usageRepo),
+		usagehandlers.UsageTrackingMiddleware(p.UsageRepo),
 	})
 	shared.RegisterHandlers(router, strictHandler)
 
