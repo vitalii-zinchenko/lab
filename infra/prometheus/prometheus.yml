@@ -18,6 +18,11 @@ scrape_configs:
       - targets:
           - postgres_exporter:9187
 
+  - job_name: postgres-standby
+    static_configs:
+      - targets:
+          - postgres_exporter_standby:9187
+
   - job_name: pgbouncer
     static_configs:
       - targets:
