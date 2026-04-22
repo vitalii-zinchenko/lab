@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UsageIndexRouteImport } from './routes/usage/index'
+import { Route as PostsIndexRouteImport } from './routes/posts/index'
 import { Route as ItemsIndexRouteImport } from './routes/items/index'
 import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as ConfigIndexRouteImport } from './routes/config/index'
@@ -29,6 +30,11 @@ const IndexRoute = IndexRouteImport.update({
 const UsageIndexRoute = UsageIndexRouteImport.update({
   id: '/usage/',
   path: '/usage/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PostsIndexRoute = PostsIndexRouteImport.update({
+  id: '/posts/',
+  path: '/posts/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ItemsIndexRoute = ItemsIndexRouteImport.update({
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/config/': typeof ConfigIndexRoute
   '/events/': typeof EventsIndexRoute
   '/items/': typeof ItemsIndexRoute
+  '/posts/': typeof PostsIndexRoute
   '/usage/': typeof UsageIndexRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/config': typeof ConfigIndexRoute
   '/events': typeof EventsIndexRoute
   '/items': typeof ItemsIndexRoute
+  '/posts': typeof PostsIndexRoute
   '/usage': typeof UsageIndexRoute
 }
 export interface FileRoutesById {
@@ -70,13 +78,21 @@ export interface FileRoutesById {
   '/config/': typeof ConfigIndexRoute
   '/events/': typeof EventsIndexRoute
   '/items/': typeof ItemsIndexRoute
+  '/posts/': typeof PostsIndexRoute
   '/usage/': typeof UsageIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/config/' | '/events/' | '/items/' | '/usage/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/config/'
+    | '/events/'
+    | '/items/'
+    | '/posts/'
+    | '/usage/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/config' | '/events' | '/items' | '/usage'
+  to: '/' | '/login' | '/config' | '/events' | '/items' | '/posts' | '/usage'
   id:
     | '__root__'
     | '/'
@@ -84,6 +100,7 @@ export interface FileRouteTypes {
     | '/config/'
     | '/events/'
     | '/items/'
+    | '/posts/'
     | '/usage/'
   fileRoutesById: FileRoutesById
 }
@@ -93,6 +110,7 @@ export interface RootRouteChildren {
   ConfigIndexRoute: typeof ConfigIndexRoute
   EventsIndexRoute: typeof EventsIndexRoute
   ItemsIndexRoute: typeof ItemsIndexRoute
+  PostsIndexRoute: typeof PostsIndexRoute
   UsageIndexRoute: typeof UsageIndexRoute
 }
 
@@ -117,6 +135,13 @@ declare module '@tanstack/react-router' {
       path: '/usage'
       fullPath: '/usage/'
       preLoaderRoute: typeof UsageIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/posts/': {
+      id: '/posts/'
+      path: '/posts'
+      fullPath: '/posts/'
+      preLoaderRoute: typeof PostsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/items/': {
@@ -149,6 +174,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConfigIndexRoute: ConfigIndexRoute,
   EventsIndexRoute: EventsIndexRoute,
   ItemsIndexRoute: ItemsIndexRoute,
+  PostsIndexRoute: PostsIndexRoute,
   UsageIndexRoute: UsageIndexRoute,
 }
 export const routeTree = rootRouteImport

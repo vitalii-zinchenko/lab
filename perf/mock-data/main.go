@@ -104,7 +104,32 @@ The full credentials list is written to --out on success.`,
 	}
 	reindexCmd.Flags().StringVar(&reindexWorkMem, "work-mem", defaultWorkMem, "PostgreSQL maintenance_work_mem for the index build (e.g. 1GB)")
 
-	root.AddCommand(fillCmd, createApiKeysCmd, dropIndexCmd, reindexCmd)
+	// ----- fill-posts -----
+	var (
+		fillPostsTarget    int64
+		fillPostsUserCount int64
+		fillPostsBatch     int64
+		fillPostsWorkers   int
+	)
+	fillPostsCmd := &cobra.Command{
+		Use:   "fill-posts",
+		Short: "Fill the posts table up to the target row count",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			pool := mustConnect(dbURL)
+			defer pool.Close()
+			userIDs, err := ensureUsers(context.Background(), pool, fillPostsUserCount)
+			if err != nil {
+				return fmt.Errorf("ensure users: %w", err)
+			}
+			return fillPosts(context.Background(), pool, fillPostsTarget, fillPostsBatch, fillPostsWorkers, userIDs)
+		},
+	}
+	fillPostsCmd.Flags().Int64Var(&fillPostsTarget, "target", 1_000_000, "target total rows in the posts table")
+	fillPostsCmd.Flags().Int64Var(&fillPostsUserCount, "users", defaultUserCount, "number of mock users to maintain")
+	fillPostsCmd.Flags().Int64Var(&fillPostsBatch, "batch", defaultBatch, "rows per COPY batch")
+	fillPostsCmd.Flags().IntVar(&fillPostsWorkers, "workers", defaultWorkers, "number of parallel COPY workers")
+
+	root.AddCommand(fillCmd, fillPostsCmd, createApiKeysCmd, dropIndexCmd, reindexCmd)
 
 	if err := root.Execute(); err != nil {
 		os.Exit(1)

@@ -144,6 +144,11 @@ type NewItem struct {
 	Name        string  `json:"name"`
 }
 
+// NewPost defines model for NewPost.
+type NewPost struct {
+	Content string `json:"content"`
+}
+
 // NewUsage defines model for NewUsage.
 type NewUsage struct {
 	Operation string    `json:"operation"`
@@ -155,6 +160,21 @@ type NewUsage struct {
 type NewUser struct {
 	Email    openapi_types.Email `json:"email"`
 	Username string              `json:"username"`
+}
+
+// Post defines model for Post.
+type Post struct {
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"createdAt"`
+	Id        int64     `json:"id"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	UserId    int64     `json:"userId"`
+}
+
+// PostPage defines model for PostPage.
+type PostPage struct {
+	Data       []Post  `json:"data"`
+	NextCursor *string `json:"nextCursor,omitempty"`
 }
 
 // TokenRequest defines model for TokenRequest.
@@ -172,6 +192,11 @@ type TokenResponse struct {
 	AccessToken string `json:"access_token"`
 	ExpiresIn   int64  `json:"expires_in"`
 	TokenType   string `json:"token_type"`
+}
+
+// UpdatePost defines model for UpdatePost.
+type UpdatePost struct {
+	Content string `json:"content"`
 }
 
 // UsageItem defines model for UsageItem.
@@ -206,6 +231,13 @@ type ListItemsParams struct {
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
+// ListPostsParams defines parameters for ListPosts.
+type ListPostsParams struct {
+	UserId int64   `form:"userId" json:"userId"`
+	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+}
+
 // GetUsageParams defines parameters for GetUsage.
 type GetUsageParams struct {
 	From   time.Time `form:"from" json:"from"`
@@ -234,6 +266,12 @@ type CreateItemJSONRequestBody = NewItem
 
 // LoginJSONRequestBody defines body for Login for application/json ContentType.
 type LoginJSONRequestBody = LoginRequest
+
+// CreatePostJSONRequestBody defines body for CreatePost for application/json ContentType.
+type CreatePostJSONRequestBody = NewPost
+
+// UpdatePostJSONRequestBody defines body for UpdatePost for application/json ContentType.
+type UpdatePostJSONRequestBody = UpdatePost
 
 // CreateTokenJSONRequestBody defines body for CreateToken for application/json ContentType.
 type CreateTokenJSONRequestBody = TokenRequest
@@ -279,6 +317,18 @@ type ServerInterface interface {
 	// Login with email and password to get a JWT access token
 	// (POST /login)
 	Login(c *gin.Context)
+	// List posts for a user (cursor-paginated)
+	// (GET /posts)
+	ListPosts(c *gin.Context, params ListPostsParams)
+	// Create a post for the authenticated user
+	// (POST /posts)
+	CreatePost(c *gin.Context)
+	// Get a post by ID
+	// (GET /posts/{id})
+	GetPost(c *gin.Context, id int64)
+	// Update a post's content (owner only)
+	// (PATCH /posts/{id})
+	UpdatePost(c *gin.Context, id int64)
 	// Exchange client credentials for a JWT access token
 	// (POST /token)
 	CreateToken(c *gin.Context)
@@ -498,6 +548,120 @@ func (siw *ServerInterfaceWrapper) Login(c *gin.Context) {
 	siw.Handler.Login(c)
 }
 
+// ListPosts operation middleware
+func (siw *ServerInterfaceWrapper) ListPosts(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListPostsParams
+
+	// ------------- Required query parameter "userId" -------------
+
+	if paramValue := c.Query("userId"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Query argument userId is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "userId", c.Request.URL.Query(), &params.UserId, runtime.BindQueryParameterOptions{Type: "integer", Format: "int64"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter userId: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", c.Request.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter limit: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", c.Request.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter cursor: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.ListPosts(c, params)
+}
+
+// CreatePost operation middleware
+func (siw *ServerInterfaceWrapper) CreatePost(c *gin.Context) {
+
+	c.Set(BearerAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.CreatePost(c)
+}
+
+// GetPost operation middleware
+func (siw *ServerInterfaceWrapper) GetPost(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id int64
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true, Type: "integer", Format: "int64"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetPost(c, id)
+}
+
+// UpdatePost operation middleware
+func (siw *ServerInterfaceWrapper) UpdatePost(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id int64
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true, Type: "integer", Format: "int64"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(BearerAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.UpdatePost(c, id)
+}
+
 // CreateToken operation middleware
 func (siw *ServerInterfaceWrapper) CreateToken(c *gin.Context) {
 
@@ -691,6 +855,10 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/items/:id", wrapper.DeleteItem)
 	router.GET(options.BaseURL+"/items/:id", wrapper.GetItem)
 	router.POST(options.BaseURL+"/login", wrapper.Login)
+	router.GET(options.BaseURL+"/posts", wrapper.ListPosts)
+	router.POST(options.BaseURL+"/posts", wrapper.CreatePost)
+	router.GET(options.BaseURL+"/posts/:id", wrapper.GetPost)
+	router.PATCH(options.BaseURL+"/posts/:id", wrapper.UpdatePost)
 	router.POST(options.BaseURL+"/token", wrapper.CreateToken)
 	router.GET(options.BaseURL+"/usage", wrapper.GetUsage)
 	router.POST(options.BaseURL+"/usage", wrapper.CreateUsage)
@@ -953,6 +1121,111 @@ func (response Login401JSONResponse) VisitLoginResponse(w http.ResponseWriter) e
 	return json.NewEncoder(w).Encode(response)
 }
 
+type ListPostsRequestObject struct {
+	Params ListPostsParams
+}
+
+type ListPostsResponseObject interface {
+	VisitListPostsResponse(w http.ResponseWriter) error
+}
+
+type ListPosts200JSONResponse PostPage
+
+func (response ListPosts200JSONResponse) VisitListPostsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreatePostRequestObject struct {
+	Body *CreatePostJSONRequestBody
+}
+
+type CreatePostResponseObject interface {
+	VisitCreatePostResponse(w http.ResponseWriter) error
+}
+
+type CreatePost201JSONResponse Post
+
+func (response CreatePost201JSONResponse) VisitCreatePostResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreatePost401JSONResponse Error
+
+func (response CreatePost401JSONResponse) VisitCreatePostResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetPostRequestObject struct {
+	Id int64 `json:"id"`
+}
+
+type GetPostResponseObject interface {
+	VisitGetPostResponse(w http.ResponseWriter) error
+}
+
+type GetPost200JSONResponse Post
+
+func (response GetPost200JSONResponse) VisitGetPostResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetPost404JSONResponse Error
+
+func (response GetPost404JSONResponse) VisitGetPostResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdatePostRequestObject struct {
+	Id   int64 `json:"id"`
+	Body *UpdatePostJSONRequestBody
+}
+
+type UpdatePostResponseObject interface {
+	VisitUpdatePostResponse(w http.ResponseWriter) error
+}
+
+type UpdatePost200JSONResponse Post
+
+func (response UpdatePost200JSONResponse) VisitUpdatePostResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdatePost401JSONResponse Error
+
+func (response UpdatePost401JSONResponse) VisitUpdatePostResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdatePost404JSONResponse Error
+
+func (response UpdatePost404JSONResponse) VisitUpdatePostResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type CreateTokenRequestObject struct {
 	Body *CreateTokenJSONRequestBody
 }
@@ -1127,6 +1400,18 @@ type StrictServerInterface interface {
 	// Login with email and password to get a JWT access token
 	// (POST /login)
 	Login(ctx context.Context, request LoginRequestObject) (LoginResponseObject, error)
+	// List posts for a user (cursor-paginated)
+	// (GET /posts)
+	ListPosts(ctx context.Context, request ListPostsRequestObject) (ListPostsResponseObject, error)
+	// Create a post for the authenticated user
+	// (POST /posts)
+	CreatePost(ctx context.Context, request CreatePostRequestObject) (CreatePostResponseObject, error)
+	// Get a post by ID
+	// (GET /posts/{id})
+	GetPost(ctx context.Context, request GetPostRequestObject) (GetPostResponseObject, error)
+	// Update a post's content (owner only)
+	// (PATCH /posts/{id})
+	UpdatePost(ctx context.Context, request UpdatePostRequestObject) (UpdatePostResponseObject, error)
 	// Exchange client credentials for a JWT access token
 	// (POST /token)
 	CreateToken(ctx context.Context, request CreateTokenRequestObject) (CreateTokenResponseObject, error)
@@ -1479,6 +1764,128 @@ func (sh *strictHandler) Login(ctx *gin.Context) {
 	}
 }
 
+// ListPosts operation middleware
+func (sh *strictHandler) ListPosts(ctx *gin.Context, params ListPostsParams) {
+	var request ListPostsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.ListPosts(ctx, request.(ListPostsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "ListPosts")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(ListPostsResponseObject); ok {
+		if err := validResponse.VisitListPostsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreatePost operation middleware
+func (sh *strictHandler) CreatePost(ctx *gin.Context) {
+	var request CreatePostRequestObject
+
+	var body CreatePostJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreatePost(ctx, request.(CreatePostRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreatePost")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(CreatePostResponseObject); ok {
+		if err := validResponse.VisitCreatePostResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetPost operation middleware
+func (sh *strictHandler) GetPost(ctx *gin.Context, id int64) {
+	var request GetPostRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetPost(ctx, request.(GetPostRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetPost")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetPostResponseObject); ok {
+		if err := validResponse.VisitGetPostResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UpdatePost operation middleware
+func (sh *strictHandler) UpdatePost(ctx *gin.Context, id int64) {
+	var request UpdatePostRequestObject
+
+	request.Id = id
+
+	var body UpdatePostJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdatePost(ctx, request.(UpdatePostRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "UpdatePost")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(UpdatePostResponseObject); ok {
+		if err := validResponse.VisitUpdatePostResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // CreateToken operation middleware
 func (sh *strictHandler) CreateToken(ctx *gin.Context) {
 	var request CreateTokenRequestObject
@@ -1635,37 +2042,41 @@ func (sh *strictHandler) CreateUser(ctx *gin.Context) {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"zM/ikagtAAA=",
+	"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",
+	"AP//UOBtIN84AAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

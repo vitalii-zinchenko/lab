@@ -1,7 +1,7 @@
 import { createRootRoute, Link, Outlet, useNavigate, useRouterState } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { LayoutDashboard, Package, Activity, BarChart3, LogOut, Settings } from 'lucide-react'
+import { LayoutDashboard, Package, Activity, BarChart3, LogOut, Settings, FileText } from 'lucide-react'
 import { useEffect } from 'react'
 import { cn } from '@/lib/utils'
 
@@ -10,6 +10,7 @@ const navItems = [
   { to: '/items', label: 'Items', icon: Package },
   { to: '/events', label: 'Events', icon: Activity },
   { to: '/usage', label: 'Usage', icon: BarChart3 },
+  { to: '/posts', label: 'Posts', icon: FileText },
 ]
 
 function AuthGuard({ children }: { children: React.ReactNode }) {

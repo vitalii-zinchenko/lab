@@ -50,6 +50,12 @@ paths:
   /usage/stats:
     $ref: "../../internal/usage/spec_paths.yaml#/paths/~1usage~1stats"
 
+  /posts:
+    $ref: "../../internal/posts/spec_paths.yaml#/paths/~1posts"
+
+  /posts/{id}:
+    $ref: "../../internal/posts/spec_paths.yaml#/paths/~1posts~1{id}"
+
 components:
   securitySchemes:
     bearerAuth:

@@ -15,6 +15,7 @@ import (
 	authhandlers "github.com/vitaliizinchenko/lab/internal/auth/handlers"
 	eventhandlers "github.com/vitaliizinchenko/lab/internal/events/handlers"
 	itemhandlers "github.com/vitaliizinchenko/lab/internal/items/handlers"
+	posthandlers "github.com/vitaliizinchenko/lab/internal/posts/handlers"
 	"github.com/vitaliizinchenko/lab/internal/shared"
 	usagehandlers "github.com/vitaliizinchenko/lab/internal/usage/handlers"
 	usagerepos "github.com/vitaliizinchenko/lab/internal/usage/repos"
@@ -31,6 +32,7 @@ type appHandler struct {
 	*authhandlers.UsersHandler
 	*authhandlers.LoginHandler
 	*usagehandlers.UsageHandler
+	*posthandlers.PostsHandler
 }
 
 // RouterParams holds all dependencies required to build the router.
@@ -54,6 +56,7 @@ type RouterParams struct {
 	UsersHandler    *authhandlers.UsersHandler
 	LoginHandler    *authhandlers.LoginHandler
 	UsageHandler    *usagehandlers.UsageHandler
+	PostsHandler    *posthandlers.PostsHandler
 
 	// UsageRepo is injected separately because UsageTrackingMiddleware needs it
 	// directly, independently of UsageHandler.
@@ -95,6 +98,7 @@ func NewRouter(p RouterParams) *gin.Engine {
 		UsersHandler:    p.UsersHandler,
 		LoginHandler:    p.LoginHandler,
 		UsageHandler:    p.UsageHandler,
+		PostsHandler:    p.PostsHandler,
 	}
 
 	strictHandler := shared.NewStrictHandler(h, []shared.StrictMiddlewareFunc{

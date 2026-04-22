@@ -8,6 +8,7 @@ import (
 	authdomain "github.com/vitaliizinchenko/lab/internal/auth"
 	eventsdomain "github.com/vitaliizinchenko/lab/internal/events"
 	itemsdomain "github.com/vitaliizinchenko/lab/internal/items"
+	postsdomain "github.com/vitaliizinchenko/lab/internal/posts"
 	usagedomain "github.com/vitaliizinchenko/lab/internal/usage"
 )
 
@@ -39,6 +40,7 @@ var AppModule = fx.Options(
 	authdomain.Module,
 	eventsdomain.Module,
 	itemsdomain.Module,
+	postsdomain.Module,
 	usagedomain.Module,
 	Module, // server.Module — provides NewRouter
 )
